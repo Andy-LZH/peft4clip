@@ -4,7 +4,7 @@ Efficiently Adaptating CLIP to unseen domains
 ## Installation
 ### install depdencies 
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Prepare Dataset
