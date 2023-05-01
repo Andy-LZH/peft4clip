@@ -1,7 +1,7 @@
 # CLIPTation 
 Efficiently Adaptating CLIP to unseen domains
 
-## Install 
+## Installation
 ### install depdencies 
 ```
 pip install requirements.txt
@@ -11,7 +11,7 @@ pip install requirements.txt
 ### Kaggle
 
 #### Environment Setup
-Follow [Kaggle API Setup](https://github.com/Kaggle/kaggle-api#readme) to prepare kaggle envs. 
+Follow [Kaggle API setup](https://github.com/Kaggle/kaggle-api#readme) to prepare kaggle envs. 
 
 #### Install Rice_Image_Dataset
 ```
