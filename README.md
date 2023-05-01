@@ -11,7 +11,7 @@ pip install requirements.txt
 ### Kaggle
 
 #### Environment Setup
-Follow [Kaggle API setup](https://github.com/Kaggle/kaggle-api#readme) to prepare kaggle envs. 
+Follow [this](https://github.com/Kaggle/kaggle-api#readme) to prepare kaggle api. 
 
 #### Install Rice_Image_Dataset
 ```
