@@ -1,5 +1,5 @@
-# CLIPTation 
-Efficiently Adaptating CLIP to unseen domains
+# M-Mux
+M-Mux(Multimodality Multiplexer) is a complex neural network capable of determine bottlenecks of the foundation model, and adapt the corresponding component accordingly. 
 
 ## Installation
 ### install depdencies 
