@@ -1,4 +1,6 @@
 # M-Mux
+[[Overleaf]](https://www.overleaf.com/project/645420d94a40fe5e86b5bcb5) [[Experiment Result]](https://docs.google.com/spreadsheets/d/1VdLHwpSc6WaDBDBAlwTeeVHV2-NfAFiPXYJk1-J5hxs)
+
 M-Mux(Multimodality Multiplexer) is a complex neural network capable of determine bottlenecks of the foundation model, and adapt the corresponding component accordingly. 
 
 ## Installation
