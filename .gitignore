@@ -1,6 +1,6 @@
-data/Rice_Image_Dataset/Arborio
-data/Rice_Image_Dataset/Basmati
-data/Rice_Image_Dataset/Ipsala
-data/Rice_Image_Dataset/Jasmine
-data/Rice_Image_Dataset/Karacadag
-data/MHIST/images
+src/data/Rice_Image_Dataset/Arborio
+src/data/Rice_Image_Dataset/Basmati
+src/data/Rice_Image_Dataset/Ipsala
+src/data/Rice_Image_Dataset/Jasmine
+src/data/Rice_Image_Dataset/Karacadag
+src/data/MHIST/images
