@@ -5,6 +5,7 @@ import clip
 import torch
 import math
 import torch.nn as nn
+from time import sleep
 from operator import mul
 from functools import reduce
 from torch.nn.modules.utils import _pair
@@ -12,7 +13,7 @@ from model.vpt.src.models.vit_backbones.vit import Embeddings
 
 
 class VisionPromptCLIP(nn.Module):
-    def __init__(self, backbone, config, prompt_config, img_size=224, num_classes=5):
+    def __init__(self, backbone: nn.Module, config, prompt_config, img_size=224, num_classes=5):
         super().__init__() # python3 syntax
 
         print("Setting up prompt configs...")
@@ -28,7 +29,7 @@ class VisionPromptCLIP(nn.Module):
         self.prompt_config = prompt_config
 
         # set vit configs
-        self.model = backbone # temporary fix, need to be more general
+        self.model = backbone.visual # temporary fix, need to be more general
         self.img_size = _pair(img_size) # convert to tuple if not, e.g. 224 -> (224, 224)
         self.patch_size = self.vit_config.patches.size # tuple of patch size, e.g. (16, 16)
         self.encoder = self.model.visual
@@ -90,6 +91,8 @@ class VisionPromptCLIP(nn.Module):
         # this is the default version:
         embedding_output = self.incorporate_prompt(x)
         clip_output = self.model.encode_image(x.to("cuda"))
+
+        sleep(10)
 
         print("embedding_output.shape: ", embedding_output.shape)
         print("clip_output.shape: ", clip_output.shape)

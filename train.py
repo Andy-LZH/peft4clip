@@ -1,16 +1,32 @@
-from model.CLIP.vpt_clip import VisionPromptCLIP
-from model.vpt.src.configs.vit_configs import get_b32_config
-from model.vpt.src.configs.config import get_cfg
-from data.Rice_Image_Dataset.Rice import Rice_Dataset
+from src.model.CLIP.vpt_clip import VisionPromptCLIP
+from src.model.vpt.src.configs.vit_configs import get_b32_config
+from src.model.vpt.src.configs.config import get_cfg
+from src.data.Rice_Image_Dataset.Rice import Rice_Dataset
+from src.utils.utils import setup_clip
 from torch.utils.data import DataLoader
+import argparse
 import clip
 from tqdm import tqdm
 from time import sleep
 
 # main function to call from workflow
 def main():
-    backbone, preprocess = clip.load("ViT-B/32", device="cuda")
-    config = get_b32_config()
+    parser = argparse.ArgumentParser(description='Train Vision Prompt CLIP')
+    # check cuda availability
+    parser.add_argument('--model', type=str, default="ViT-B/32",
+                        help='For Saving and loading the current Model')
+    parser.add_argument('--device', type=str, default="cuda",
+                        help='For Saving and loading the current Model')
+    parser.add_argument('--data', type=str, default="Rice_Image_Dataset",
+                        help='For Saving and loading the current Model')
+    
+    args = parser.parse_args()
+
+    # set up cfg and args
+    backbone, preprocess, config, prompt_config = setup_clip(args)
+
+    # backbone, preprocess = clip.load("ViT-B/32", device="cuda")
+    # config = get_b32_config()
     prompt_config = get_cfg().MODEL.PROMPT
     prompt_config.PROJECT = 768
     rice_dataset_test = Rice_Dataset(csv_file='data/Rice_Image_Dataset/test_meta.csv', root_dir='data/Rice_Image_Dataset/', transform=preprocess)
@@ -30,4 +46,6 @@ def main():
         sleep(1)
     # TODO: encapsulate into evlauator
     # model.eval()
-main()
+
+if __name__ == '__main__':
+    main()
