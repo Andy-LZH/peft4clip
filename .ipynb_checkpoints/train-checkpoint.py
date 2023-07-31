@@ -1,16 +1,12 @@
 from src.model.CLIP.vpt_clip import VisionPromptCLIP
+
 from src.data.Rice_Image_Dataset.Rice import Rice_Dataset
 from src.utils.utils import setup_clip
 from torch.utils.data import DataLoader
-from tqdm import tqdm
-from time import sleep
-import numpy as np
 import argparse
 import clip
-import torch
-from torch.cuda.amp import autocast
-
-
+from tqdm import tqdm
+from time import sleep
 
 # main function to call from workflow
 def main():
@@ -38,48 +34,12 @@ def main():
     num_classes = len(rice_dataset_test.classes)
 
     model = VisionPromptCLIP(backbone=backbone, config=config, prompt_config=prompt_config, img_size=img_size, num_classes=num_classes)
-    model = model.to(args.device)
 
     # TODO: encapsulate into trainer
     model.train()
-    predicted = []
-    labels = []
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-3)
-    loss_fn = torch.nn.CrossEntropyLoss()
-
     for img, label, idx in tqdm(train_loader):
-        image_features = model.forward(img)
-        # check how this improve linear probe accuracy
-        with autocast():
-            image_features /= image_features.norm(dim=-1, keepdim=True)
-            text_features /= text_features.norm(dim=-1, keepdim=True)
-
-            logit_scale = backbone.logit_scale.exp()
-            logits = logit_scale * (100.0 * image_features @ text_features.T)
-            loss = loss_fn(logits, label.to(args.device))
-
-            # update weights set torch autograd 
-            
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-        # find the highest logit for each image in the batch
-        _, indices = logits.max(dim=-1)
-        predicted.append(indices.cpu().numpy())
-        labels.append(label.cpu().numpy())
-
-        # print loss and accuracy in each batch inside tqdm
-        tqdm.write(f"Loss = {loss.item()}")
-        tqdm.write(f"Accuracy = {(indices == label.to(args.device)).float().mean().item()}")
-    
-    # calculate accuracy
-    predicted = np.concatenate(predicted)
-    labels = np.concatenate(labels)
-
-    accuracy = (predicted == labels).mean()
-    print(f"Train Accuracy = {accuracy}")
-
+        raw_feature, clip_feature = model(img)
+        sleep(0.1)
 
 if __name__ == '__main__':
     main()
