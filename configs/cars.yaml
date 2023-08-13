@@ -1,0 +1,11 @@
+DATA:
+  NAME: "StanfordCars"
+  DATAPATH: ""  #TODO: need to specify here
+  NUMBER_CLASSES: 196
+  MULTILABEL: False
+  CLASSESPATH: "src/data/StanfordCars/meta/labels.txt"
+MODEL:
+  TYPE: "vit"
+SOLVER:
+  BASE_LR: 0.001
+  WEIGHT_DECAY: 0.0001

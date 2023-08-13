@@ -4,3 +4,7 @@ regex
 tqdm
 fvcore
 ml_collections
+kaggle
+opencv-python 
+scipy
+simplejson

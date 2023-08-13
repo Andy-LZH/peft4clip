@@ -13,7 +13,9 @@ from src.model.vpt.src.models.vit_backbones.vit import Embeddings
 
 
 class VisionPromptCLIP(nn.Module):
-    def __init__(self, backbone: nn.Module, config, prompt_config, img_size=224, num_classes=5):
+    def __init__(
+        self, backbone: nn.Module, config, prompt_config, img_size=224, num_classes=5
+    ):
         super().__init__()  # python3 syntax
 
         print("Setting up prompt configs...")
@@ -30,8 +32,7 @@ class VisionPromptCLIP(nn.Module):
 
         # set vit configs
         self.model = backbone  # temporary fix, need to be more general
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # convert to tuple if not, e.g. 224 -> (224, 224)
         self.img_size = _pair(img_size)
         # tuple of patch size, e.g. (16, 16)
@@ -47,27 +48,29 @@ class VisionPromptCLIP(nn.Module):
         if self.prompt_config.PROJECT > -1:
             # only for prepend / add
             self.prompt_dim = self.prompt_config.PROJECT
-            self.prompt_proj = nn.Linear(
-                self.prompt_dim, config.hidden_size)
-            nn.init.kaiming_normal_(
-                self.prompt_proj.weight, a=0, mode='fan_out')
+            self.prompt_proj = nn.Linear(self.prompt_dim, config.hidden_size)
+            nn.init.kaiming_normal_(self.prompt_proj.weight, a=0, mode="fan_out")
         else:
             self.prompt_dim = config.hidden_size
             self.prompt_proj = nn.Identity()
 
         # initiate prompt:
         if self.prompt_config.INITIATION == "random":
-            val = math.sqrt(6. / float(3 * reduce(mul, self.patch_size, 1) + self.prompt_dim))  # noqa
+            val = math.sqrt(
+                6.0 / float(3 * reduce(mul, self.patch_size, 1) + self.prompt_dim)
+            )  # noqa
 
-            self.prompt_embeddings = nn.Parameter(torch.zeros(
-                1, self.num_tokens, self.prompt_dim))
+            self.prompt_embeddings = nn.Parameter(
+                torch.zeros(1, self.num_tokens, self.prompt_dim)
+            )
             # xavier_uniform initialization
             nn.init.uniform_(self.prompt_embeddings.data, -val, val)
 
             if self.prompt_config.DEEP:  # noqa
-                total_d_layer = config.transformer["num_layers"]-1
-                self.deep_prompt_embeddings = nn.Parameter(torch.zeros(
-                    total_d_layer, self.num_tokens, self.prompt_dim))
+                total_d_layer = config.transformer["num_layers"] - 1
+                self.deep_prompt_embeddings = nn.Parameter(
+                    torch.zeros(total_d_layer, self.num_tokens, self.prompt_dim)
+                )
                 # xavier_uniform initialization
                 nn.init.uniform_(self.deep_prompt_embeddings.data, -val, val)
 
@@ -92,12 +95,16 @@ class VisionPromptCLIP(nn.Module):
         B = x.shape[0]
         # after CLS token, all before image patches
         x = self.embeddings(x)  # (batch_size, 1 + n_patches, hidden_dim)
-        embedding = torch.cat((
-            x[:, :1, :],
-            self.prompt_dropout(self.prompt_proj(
-                self.prompt_embeddings).expand(B, -1, -1)),
-            x[:, 1:, :]
-        ), dim=1)  # (batch_size, cls_token + n_prompt + n_patches, hidden_dim)
+        embedding = torch.cat(
+            (
+                x[:, :1, :],
+                self.prompt_dropout(
+                    self.prompt_proj(self.prompt_embeddings).expand(B, -1, -1)
+                ),
+                x[:, 1:, :],
+            ),
+            dim=1,
+        )  # (batch_size, cls_token + n_prompt + n_patches, hidden_dim)
 
         return embedding
 
@@ -117,7 +124,7 @@ class VisionPromptCLIP(nn.Module):
         """
 
         # convert to tensor if not
-        img = x.to(self.device)
+        img = x
 
         # incorporate prompt
         incoporated_prompt = self.incorporate_prompt(img)
@@ -134,7 +141,7 @@ class VisionPromptCLIP(nn.Module):
         # project to output dim
         if self.ViT.output_dim != x.shape[-1]:
             x = x @ self.ViT.proj  # (batch_size, output_dim)
-        
+
         # return logits
         return x
 
