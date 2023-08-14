@@ -10,11 +10,56 @@ from operator import mul
 from functools import reduce
 from torch.nn.modules.utils import _pair
 from src.model.vpt.src.models.vit_backbones.vit import Embeddings
+from torch.cuda.amp import autocast
+
+
+class CLIPEmbedding(Embeddings):
+    """
+    CLIP Embedding module, inherit from Embeddings module in ViT backbone
+    """
+
+    def __init__(self, ViT, config, img_size, in_channels=3):
+        """
+        Constructor of CLIP Embedding module
+
+        Parameters
+        ----------
+        ViT : nn.Module
+            CLIP vision encoder
+        config : dict
+            Configurations of CLIP
+        img_size : int
+            Size of input image
+        in_channels : int, optional
+            Number of input channels, by default 3
+        """
+        super().__init__(config, img_size, in_channels=in_channels)
+
+        # set CLIP configs
+        self.patch_embeddings = ViT.conv1
+
+    def clip_forward(self, x):
+        B = x.shape[0]
+        cls_token = self.cls_token.expand(
+            B, -1, -1
+        )  # stole cls_tokens impl from Phil Wang, thanks
+        x = self.clip_patch_embeddings(x)  # (batch_size, n_patches, hidden_dim)
+        x = x.flatten(2).transpose(-1, -2)  # (batch_size, hidden_dim, n_patches)
+        x = torch.cat((cls_token, x), dim=1)  # (batch_size, 1 + n_patches, hidden_dim)
+        x = x + self.position_embeddings
+        x = self.dropout(x)
+        return x
 
 
 class VisionPromptCLIP(nn.Module):
     def __init__(
-        self, backbone: nn.Module, config, prompt_config, img_size=224, num_classes=5
+        self,
+        backbone: nn.Module,
+        config,
+        prompt_config,
+        prompts,
+        img_size=224,
+        num_classes=5,
     ):
         super().__init__()  # python3 syntax
 
@@ -29,6 +74,7 @@ class VisionPromptCLIP(nn.Module):
         # get configs
         self.vit_config = config
         self.prompt_config = prompt_config
+        self.prompts = prompts
 
         # set vit configs
         self.model = backbone  # temporary fix, need to be more general
@@ -38,12 +84,16 @@ class VisionPromptCLIP(nn.Module):
         # tuple of patch size, e.g. (16, 16)
         self.patch_size = self.vit_config.patches.size
         self.ViT = self.model.visual
-        self.embeddings = Embeddings(self.vit_config, self.img_size)
+        self.embeddings = CLIPEmbedding(self.ViT, self.vit_config, self.img_size)
 
         # set prompt configs
         self.num_tokens = self.prompt_config.NUM_TOKENS
         self.prompt_dropout = nn.Dropout(self.prompt_config.DROPOUT)
 
+        print("Setting up prompt...")
+        print("Project: ", self.prompt_config.PROJECT)
+        
+        sleep(1)
         # if project the prompt embeddings
         if self.prompt_config.PROJECT > -1:
             # only for prepend / add
@@ -95,6 +145,7 @@ class VisionPromptCLIP(nn.Module):
         B = x.shape[0]
         # after CLS token, all before image patches
         x = self.embeddings(x)  # (batch_size, 1 + n_patches, hidden_dim)
+        print("Embedding type: ", x.dtype)
         embedding = torch.cat(
             (
                 x[:, :1, :],
@@ -122,28 +173,42 @@ class VisionPromptCLIP(nn.Module):
         logits : torch.Tensor
             Output logits tensor
         """
+        with autocast():
+            # enable autocast for mixed precision
+            img = x
 
-        # convert to tensor if not
-        img = x
+            # incorporate prompt
+            incoporated_prompt = self.incorporate_prompt(img)
 
-        # incorporate prompt
-        incoporated_prompt = self.incorporate_prompt(img)
+            # forward pass through transformer
+            transformer = self.ViT.transformer
 
-        # forward pass through transformer
-        transformer = self.ViT.transformer
+            # convert to fp16 to be comatible with CLIP
+            input_embedding = transformer(incoporated_prompt)
 
-        # convert to fp16 to be comatible with CLIP
-        x = transformer(incoporated_prompt.half())
+            clip_output = self.model.encode_image(img)
 
-        # Layernorm
-        x = self.ViT.ln_post(x[:, 0, :])  # (batch_size, hidden_dim)
+            # Layernorm
+            input_embedding = self.ViT.ln_post(
+                input_embedding[:, 0, :]
+            )  # (batch_size, hidden_dim)
+            print("input_embedding: dtype", input_embedding.shape)
 
-        # project to output dim
-        if self.ViT.output_dim != x.shape[-1]:
-            x = x @ self.ViT.proj  # (batch_size, output_dim)
+            # project to output dim
+            if self.ViT.output_dim != input_embedding.shape[-1]:
+                input_embedding = (
+                    input_embedding @ self.ViT.proj
+                )  # (batch_size, output_dim)
 
-        # return logits
-        return x
+            image_features_vpt = input_embedding
+            text_features = self.model.encode_text(self.prompts)
+            image_features_vpt /= image_features_vpt.norm(dim=-1, keepdim=True)
+            text_features /= text_features.norm(dim=-1, keepdim=True)
+
+            logit_scale = self.model.logit_scale.exp()
+            logits = logit_scale * (image_features_vpt @ text_features.t())
+            print("logits: dtype", logits.dtype)
+        return logits
 
     def train(self):
         """
@@ -151,8 +216,6 @@ class VisionPromptCLIP(nn.Module):
         """
 
         # freeze CLIP
-        for param in self.model.parameters():
-            param.requires_grad = False
         self.model.eval()
 
         # set model to train mode

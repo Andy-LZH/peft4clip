@@ -66,7 +66,7 @@ def setup_clip(args: argparse.Namespace) -> tuple:
         "nabirds",
     ]:
         raise ValueError(
-            "Dataset not supported yet, please choose from [Rice_Image_Dataset, Food-101, CUB, OxfordFlowers, StanfordCars, StanfordDogs, nabirds]"
+            "Dataset not supported yet, please choose from [Rice_Image_Dataset, food-101, CUB, OxfordFlowers, StanfordCars, StanfordDogs, nabirds]"
         )
 
     # set up CLIP

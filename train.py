@@ -1,3 +1,4 @@
+import os
 import clip
 import torch
 import argparse
@@ -5,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from time import sleep
 from torch.cuda.amp import autocast
+import matplotlib.pyplot as plt
 from src.model.vpt_clip.vpt_clip import VisionPromptCLIP
 from src.utils.utils import setup_clip
 
@@ -29,7 +31,7 @@ def main():
     parser.add_argument(
         "--data",
         type=str,
-        default="Rice_Image_Dataset",
+        default="food-101",
         help="For Saving and loading the current Model",
     )
 
@@ -50,6 +52,11 @@ def main():
     print(dataset_config)
     sleep(1)
 
+    # construct text input
+    text_input = torch.cat(
+        [clip.tokenize(f"a photo of {c}") for c in dataset_config.DATA.CLASSES]
+    ).to(args.device)
+
     # define data loaders
     img_size = dataset_config.DATA.CROPSIZE
     num_classes = dataset_config.DATA.NUMBER_CLASSES
@@ -60,51 +67,47 @@ def main():
         prompt_config=prompt_config,
         img_size=img_size,
         num_classes=num_classes,
+        prompts=text_input,
     )
     model = model.to(args.device)
-
-    # construct text input
-    text_input = torch.cat(
-        [clip.tokenize(f"a photo of {c}") for c in dataset_config.DATA.CLASSES]
-    ).to(args.device)
-
-    # TODO: encapsulate into trainer
     model.train()
+
     predicted = []
     labels = []
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+    # define optimizer and loss function
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     loss_fn = torch.nn.CrossEntropyLoss()
+
     pbar = tqdm(train_loader)
     for epoch in range(1):
+        loss_step = []
+        accuracy_step = []
         for img, label, idx in pbar:
-            image_features_vpt = model(img.to(args.device))
-            text_features = backbone.encode_text(text_input)
-
             # TODO check how this improve linear probe accuracy
-
             # dynamically cast to fp16 to save memory and comatible with clip
-            with autocast():
-                image_features_vpt /= image_features_vpt.norm(dim=-1, keepdim=True)
-                text_features /= text_features.norm(dim=-1, keepdim=True)
 
-                logit_scale = backbone.logit_scale.exp()
-                logits = logit_scale * image_features_vpt @ text_features.t()
-
-                # update weights set torch autograd
-                loss = loss_fn(logits, label.to(args.device))
-
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+            # forward pass
+            logits = model(img.to(args.device))
+            logits = logits.float()
+            print(logits.shape)
+            print(label.shape)
+            loss = loss_fn(logits, label.to(args.device))
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
             # find the highest logit for each image in the batch
-            _, indices = logits.max(dim=-1)
+            _, indices = logits.max(1)
             predicted.append(indices.cpu().numpy())
             labels.append(label.cpu().numpy())
 
             accuracy = (indices == label.to(args.device)).float().mean().item()
-            print(type(loss.item()))
-            print(type(accuracy))
+
+            # draw loss and accuracy
+            loss_step.append(loss.item())
+            accuracy_step.append(accuracy)
+
             # print loss and accuracy in each batch inside tqdm
             pbar.set_description(
                 "Epoch [{}/{}] Loss: {:.4f} Accuracy: {:.2f}%".format(
@@ -121,6 +124,23 @@ def main():
 
     accuracy = (predicted == labels).mean()
     print(f"Train Accuracy = {accuracy}")
+
+    # check if logs folder exists
+    if not os.path.exists("./src/logs"):
+        os.makedirs("./src/logs")
+
+    # draw loss and accuracy using matplotlib
+    plt.plot(loss_step)
+    plt.title("Loss")
+    plt.xlabel("Step")
+    plt.ylabel("Loss")
+    plt.savefig("./src/logs/loss_{}.png".format(args.data))
+
+    plt.plot(accuracy_step)
+    plt.title("Accuracy")
+    plt.xlabel("Step")
+    plt.ylabel("Accuracy")
+    plt.savefig("./src/logs/accuracy_{}.png".format(args.data))
 
 
 if __name__ == "__main__":

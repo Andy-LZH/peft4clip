@@ -65,6 +65,7 @@ class JSONDataset(torch.utils.data.Dataset):
 
         print("Number of images: {}".format(len(self._imdb)))
         print("Number of classes: {}".format(len(self._class_ids)))
+        print("Class ids: {}".format(self._class_ids))
 
     def get_info(self):
         num_imgs = len(self._imdb)
