@@ -77,9 +77,10 @@ def main():
 
     # define optimizer and loss function
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = torch.nn.CrossEntropyLoss(reduction="none")
 
     pbar = tqdm(train_loader)
+    torch.autograd.set_detect_anomaly(True)
     for epoch in range(1):
         loss_step = []
         accuracy_step = []
@@ -88,11 +89,16 @@ def main():
             # dynamically cast to fp16 to save memory and comatible with clip
 
             # forward pass
-            logits = model(img.to(args.device))
-            logits = logits.float()
-            print(logits.shape)
-            print(label.shape)
-            loss = loss_fn(logits, label.to(args.device))
+            with autocast():
+                # calculate logits
+                logits = model(img.to(args.device))
+                assert logits.dtype == torch.float16
+
+                # calculate loss
+                loss = loss_fn(logits, label.to(args.device))
+                loss = torch.sum(loss) / logits.shape[0]
+                assert loss.dtype == torch.float32
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()

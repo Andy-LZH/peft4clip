@@ -8,3 +8,5 @@ kaggle
 opencv-python 
 scipy
 simplejson
+matplotlib
+pandas

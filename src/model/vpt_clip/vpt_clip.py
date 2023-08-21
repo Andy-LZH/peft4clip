@@ -28,7 +28,7 @@ class CLIPEmbedding(Embeddings):
             CLIP vision encoder
         config : dict
             Configurations of CLIP
-        img_size : int
+        img_size : tuple
             Size of input image
         in_channels : int, optional
             Number of input channels, by default 3
@@ -36,18 +36,45 @@ class CLIPEmbedding(Embeddings):
         super().__init__(config, img_size, in_channels=in_channels)
 
         # set CLIP configs
+        self.original_patch_embeddings = self.patch_embeddings
         self.patch_embeddings = ViT.conv1
+        self.input_resolution = img_size
+        self.ln_pre = ViT.ln_pre
 
-    def clip_forward(self, x):
-        B = x.shape[0]
-        cls_token = self.cls_token.expand(
-            B, -1, -1
-        )  # stole cls_tokens impl from Phil Wang, thanks
-        x = self.clip_patch_embeddings(x)  # (batch_size, n_patches, hidden_dim)
-        x = x.flatten(2).transpose(-1, -2)  # (batch_size, hidden_dim, n_patches)
-        x = torch.cat((cls_token, x), dim=1)  # (batch_size, 1 + n_patches, hidden_dim)
-        x = x + self.position_embeddings
-        x = self.dropout(x)
+    def forward(self, x):
+        """
+        Construct to expacted input embedding for Transformer in CLIP
+        @reference github.com/openai/CLIP
+        """
+        # retrive patch embeddings
+        with torch.no_grad():
+            x = self.patch_embeddings(x)  # shape = [batch, width, grid, grid]
+
+        # from patch embeddings get width and form scale
+        width = x.shape[1]
+        scale = width**-0.5
+        patch_size = x.shape[2]
+        self.class_embedding = nn.Parameter(scale * torch.randn(width))
+        self.positional_embedding = nn.Parameter(
+            scale * torch.randn((self.input_resolution[0] // patch_size) ** 2 + 1, width)
+        )
+
+        # reform embeddings
+        # shape = [batch, width, grid*grid]
+        x = x.reshape(x.shape[0], x.shape[1], -1)
+        x = x.permute(0, 2, 1)  # shape = [batch, n_patches, width]
+        x = torch.cat(
+            [
+                self.class_embedding.to(x.device)
+                + torch.zeros(
+                    x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device
+                ),
+                x,
+            ],
+            dim=1,
+        )  # shape = [*, hidden_path + 1, width]
+        x = x + self.position_embeddings.to(x.dtype)
+        x = self.ln_pre(x)
         return x
 
 
@@ -88,11 +115,11 @@ class VisionPromptCLIP(nn.Module):
 
         # set prompt configs
         self.num_tokens = self.prompt_config.NUM_TOKENS
-        self.prompt_dropout = nn.Dropout(self.prompt_config.DROPOUT)
+        self.prompt_dropout = nn.Dropout(0.2)
 
         print("Setting up prompt...")
         print("Project: ", self.prompt_config.PROJECT)
-        
+
         sleep(1)
         # if project the prompt embeddings
         if self.prompt_config.PROJECT > -1:
@@ -145,7 +172,7 @@ class VisionPromptCLIP(nn.Module):
         B = x.shape[0]
         # after CLS token, all before image patches
         x = self.embeddings(x)  # (batch_size, 1 + n_patches, hidden_dim)
-        print("Embedding type: ", x.dtype)
+
         embedding = torch.cat(
             (
                 x[:, :1, :],
@@ -156,7 +183,7 @@ class VisionPromptCLIP(nn.Module):
             ),
             dim=1,
         )  # (batch_size, cls_token + n_prompt + n_patches, hidden_dim)
-
+        # check dim-1 n_prompt
         return embedding
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -173,41 +200,45 @@ class VisionPromptCLIP(nn.Module):
         logits : torch.Tensor
             Output logits tensor
         """
-        with autocast():
-            # enable autocast for mixed precision
-            img = x
+        # enable autocast for mixed precision
+        img = x
 
-            # incorporate prompt
-            incoporated_prompt = self.incorporate_prompt(img)
+        # incorporate prompt
+        incoporated_prompt = self.incorporate_prompt(img) # (batch_size, 1 + n_patches + n_prompt, hidden_dim)
 
-            # forward pass through transformer
+        # reform embedding to match CLIP
+        incoporated_prompt = incoporated_prompt.permute(1, 0, 2)  # (1 + n_patches + n_prompt, batch_size, hidden_dim)
+
+        # Frozen CLIP forward pass
+        with torch.no_grad():
             transformer = self.ViT.transformer
-
-            # convert to fp16 to be comatible with CLIP
             input_embedding = transformer(incoporated_prompt)
-
-            clip_output = self.model.encode_image(img)
-
+            
+            # reform embedding to perform loss calculation
+            input_embedding = input_embedding.permute(1, 0, 2)  # (batch_size, 1 + n_patches + n_prompt, hidden_dim)
             # Layernorm
             input_embedding = self.ViT.ln_post(
                 input_embedding[:, 0, :]
             )  # (batch_size, hidden_dim)
-            print("input_embedding: dtype", input_embedding.shape)
 
             # project to output dim
             if self.ViT.output_dim != input_embedding.shape[-1]:
-                input_embedding = (
-                    input_embedding @ self.ViT.proj
-                )  # (batch_size, output_dim)
+                input_embedding = input_embedding @ self.ViT.proj  # (batch_size, output_dim)
 
-            image_features_vpt = input_embedding
+        image_features_vpt = input_embedding
+
+        # Freeze CLIP forward pass
+        with torch.no_grad():
             text_features = self.model.encode_text(self.prompts)
-            image_features_vpt /= image_features_vpt.norm(dim=-1, keepdim=True)
-            text_features /= text_features.norm(dim=-1, keepdim=True)
 
-            logit_scale = self.model.logit_scale.exp()
-            logits = logit_scale * (image_features_vpt @ text_features.t())
-            print("logits: dtype", logits.dtype)
+        # after calculating text features, convert back to fp32
+        image_features_vpt = image_features_vpt / image_features_vpt.norm(
+            dim=-1, keepdim=True
+        )
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+
+        logit_scale = self.model.logit_scale
+        logits = logit_scale * (image_features_vpt @ text_features.t())
         return logits
 
     def train(self):
@@ -219,8 +250,8 @@ class VisionPromptCLIP(nn.Module):
         self.model.eval()
 
         # set model to train mode
-        self.prompt_proj.train()
-        self.prompt_dropout.train()
+        self.prompt_proj.eval()
+        self.prompt_dropout.eval()
 
     def eval(self):
         """
