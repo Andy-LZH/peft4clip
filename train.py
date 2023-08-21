@@ -75,9 +75,16 @@ def main():
     predicted = []
     labels = []
 
-    # define optimizer and loss function
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    loss_fn = torch.nn.CrossEntropyLoss(reduction="none")
+    # define optimizer and loss function, update only two parameters (prompt_dropout and prompt_proj)
+    optimizer = torch.optim.SGD(
+        [
+            {"params": model.prompt_dropout.parameters()},
+            {"params": model.prompt_proj.parameters()},
+        ],
+        lr=dataset_config.SOLVER.BASE_LR,
+        weight_decay=dataset_config.SOLVER.WEIGHT_DECAY,
+    )
+    loss_fn = torch.nn.CrossEntropyLoss()
 
     pbar = tqdm(train_loader)
     torch.autograd.set_detect_anomaly(True)
@@ -87,6 +94,11 @@ def main():
         for img, label, idx in pbar:
             # TODO check how this improve linear probe accuracy
             # dynamically cast to fp16 to save memory and comatible with clip
+
+            # check if parameters has been updated
+            for name, param in model.named_parameters():
+                if param.requires_grad:
+                    print(name, param.data.sum())
 
             # forward pass
             with autocast():
@@ -107,6 +119,9 @@ def main():
             _, indices = logits.max(1)
             predicted.append(indices.cpu().numpy())
             labels.append(label.cpu().numpy())
+
+            print("Predicted: ", list(indices.cpu().numpy()))
+            print("Labels: ", list(label.cpu().numpy()))
 
             accuracy = (indices == label.to(args.device)).float().mean().item()
 
