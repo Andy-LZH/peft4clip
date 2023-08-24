@@ -75,35 +75,33 @@ def main():
     predicted = []
     labels = []
 
-    # define optimizer and loss function, update only two parameters (prompt_dropout and prompt_proj)
+    # define optimizer and loss function, update only one parameter linear in the model
+    parameters = (
+        list(model.head.parameters())
+        + list(model.prompt_dropout.parameters())
+        + list(model.prompt_proj.parameters())
+    )
     optimizer = torch.optim.SGD(
-        [
-            {"params": model.prompt_dropout.parameters()},
-            {"params": model.prompt_proj.parameters()},
-        ],
+        parameters,
         lr=dataset_config.SOLVER.BASE_LR,
         weight_decay=dataset_config.SOLVER.WEIGHT_DECAY,
     )
+
+    max_epochs = 20
+    warm_up_epochs = 5
     loss_fn = torch.nn.CrossEntropyLoss()
 
     pbar = tqdm(train_loader)
     torch.autograd.set_detect_anomaly(True)
-    for epoch in range(1):
+    for epoch in range(warm_up_epochs + max_epochs):
         loss_step = []
         accuracy_step = []
         for img, label, idx in pbar:
-            # TODO check how this improve linear probe accuracy
-            # dynamically cast to fp16 to save memory and comatible with clip
-
-            # check if parameters has been updated
-            for name, param in model.named_parameters():
-                if param.requires_grad:
-                    print(name, param.data.sum())
-
-            # forward pass
+            
+            # mixed precision training
             with autocast():
                 # calculate logits
-                logits = model(img.to(args.device))
+                logits = model.linear_probe(img.to(args.device))
                 assert logits.dtype == torch.float16
 
                 # calculate loss
@@ -120,9 +118,6 @@ def main():
             predicted.append(indices.cpu().numpy())
             labels.append(label.cpu().numpy())
 
-            print("Predicted: ", list(indices.cpu().numpy()))
-            print("Labels: ", list(label.cpu().numpy()))
-
             accuracy = (indices == label.to(args.device)).float().mean().item()
 
             # draw loss and accuracy
@@ -133,7 +128,7 @@ def main():
             pbar.set_description(
                 "Epoch [{}/{}] Loss: {:.4f} Accuracy: {:.2f}%".format(
                     epoch + 1,
-                    1,
+                    max_epochs,
                     loss.item(),
                     accuracy * 100,
                 )

@@ -54,13 +54,8 @@ class CLIPEmbedding(Embeddings):
         width = x.shape[1]
         scale = width**-0.5
         patch_size = x.shape[2]
-        self.class_embedding = nn.Parameter(
-            scale * torch.randn(width), requires_grad=False
-        )
-        self.positional_embedding = nn.Parameter(
-            scale
-            * torch.randn((self.input_resolution[0] // patch_size) ** 2 + 1, width),
-            requires_grad=False,
+        self.class_embedding = nn.Parameter(scale * torch.randn(width))
+        self.positional_embedding = nn.Parameter(scale * torch.randn((self.input_resolution[0] // patch_size) ** 2 + 1, width)
         )
 
         # reform embeddings
@@ -121,6 +116,9 @@ class VisionPromptCLIP(nn.Module):
         self.num_tokens = self.prompt_config.NUM_TOKENS
         self.prompt_dropout = nn.Dropout(0.2)
 
+        # output layer
+        self.head = nn.Linear(self.ViT.output_dim, num_classes)
+
         print("Setting up prompt...")
         print("Project: ", self.prompt_config.PROJECT)
 
@@ -128,10 +126,12 @@ class VisionPromptCLIP(nn.Module):
         # if project the prompt embeddings
         if self.prompt_config.PROJECT > -1:
             # only for prepend / add
+            print("Project")
             self.prompt_dim = self.prompt_config.PROJECT
             self.prompt_proj = nn.Linear(self.prompt_dim, config.hidden_size)
             nn.init.kaiming_normal_(self.prompt_proj.weight, a=0, mode="fan_out")
         else:
+            print("No project")
             self.prompt_dim = config.hidden_size
             self.prompt_proj = nn.Identity()
 
@@ -223,12 +223,10 @@ class VisionPromptCLIP(nn.Module):
 
         image_features_vpt = input_embedding
 
-        text_features = self.model.encode_text(self.prompts)
-
-        # after calculating text features, convert back to fp32
-        image_features_vpt = image_features_vpt / image_features_vpt.norm(
-            dim=-1, keepdim=True
-        )
+        # # after calculating text features, convert back to fp32
+        # image_features_vpt = image_features_vpt / image_features_vpt.norm(
+        #     dim=-1, keepdim=True
+        # )
 
         return image_features_vpt
 
@@ -246,6 +244,7 @@ class VisionPromptCLIP(nn.Module):
         logits : torch.Tensor
             Output logits tensor
         """
+        # retrive image features 
         image_features_vpt = self.encode_image(x)
 
         with torch.no_grad():
@@ -257,9 +256,21 @@ class VisionPromptCLIP(nn.Module):
         self.prompt_proj.train()
         self.prompt_dropout.train()
         return logits
-    
+
     def linear_probe(self, x: torch.Tensor) -> torch.Tensor:
-        image_features_vpt = self.encode_image(x)
+        """
+        Linear probe of Vision Prompt CLIP
+        """
+
+        # Ground Truth for debugging
+        # with torch.no_grad():
+        #     image_features = self.model.encode_image(x)
+
+        image_features = self.encode_image(x)
+
+        self.head.train()
+        logits = self.head(image_features)
+        return logits
 
     def train(self):
         """
@@ -275,6 +286,7 @@ class VisionPromptCLIP(nn.Module):
         # set model to train mode
         self.prompt_proj.train()
         self.prompt_dropout.train()
+        self.head.train()
 
     def eval(self):
         """
