@@ -9,72 +9,7 @@ from time import sleep
 from operator import mul
 from functools import reduce
 from torch.nn.modules.utils import _pair
-from src.model.vpt.src.models.vit_backbones.vit import Embeddings
-from torch.cuda.amp import autocast
-
-
-class CLIPEmbedding(Embeddings):
-    """
-    CLIP Embedding module, inherit from Embeddings module in ViT backbone
-    """
-
-    def __init__(self, ViT, config, img_size, in_channels=3):
-        """
-        Constructor of CLIP Embedding module
-
-        Parameters
-        ----------
-        ViT : nn.Module
-            CLIP vision encoder
-        config : dict
-            Configurations of CLIP
-        img_size : tuple
-            Size of input image
-        in_channels : int, optional
-            Number of input channels, by default 3
-        """
-        super().__init__(config, img_size, in_channels=in_channels)
-
-        # set CLIP configs
-        self.original_patch_embeddings = self.patch_embeddings
-        self.patch_embeddings = ViT.conv1
-        self.input_resolution = img_size
-        self.ln_pre = ViT.ln_pre
-
-    def forward(self, x):
-        """
-        Construct to expacted input embedding for Transformer in CLIP
-        @reference github.com/openai/CLIP
-        """
-        # retrive patch embeddings
-        with torch.no_grad():
-            x = self.patch_embeddings(x)  # shape = [batch, width, grid, grid]
-
-        # from patch embeddings get width and form scale
-        width = x.shape[1]
-        scale = width**-0.5
-        patch_size = x.shape[2]
-        self.class_embedding = nn.Parameter(scale * torch.randn(width))
-        self.positional_embedding = nn.Parameter(scale * torch.randn((self.input_resolution[0] // patch_size) ** 2 + 1, width)
-        )
-
-        # reform embeddings
-        # shape = [batch, width, grid*grid]
-        x = x.reshape(x.shape[0], x.shape[1], -1)
-        x = x.permute(0, 2, 1)  # shape = [batch, n_patches, width]
-        x = torch.cat(
-            [
-                self.class_embedding.to(x.device)
-                + torch.zeros(
-                    x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device
-                ),
-                x,
-            ],
-            dim=1,
-        )  # shape = [*, hidden_path + 1, width]
-        x = x + self.position_embeddings.to(x.dtype)
-        x = self.ln_pre(x)
-        return x
+from src.model.vpt_clip.backbones.clip_embedding import CLIPEmbedding
 
 
 class VisionPromptCLIP(nn.Module):
@@ -90,7 +25,6 @@ class VisionPromptCLIP(nn.Module):
         super().__init__()  # python3 syntax
 
         print("Setting up prompt configs...")
-        assert prompt_config.DEEP == False, "Deep prompt not supported yet"
         assert prompt_config.LOCATION == "prepend"
         assert prompt_config.INITIATION == "random"
         assert prompt_config.NUM_DEEP_LAYERS is None
@@ -223,11 +157,6 @@ class VisionPromptCLIP(nn.Module):
 
         image_features_vpt = input_embedding
 
-        # # after calculating text features, convert back to fp32
-        # image_features_vpt = image_features_vpt / image_features_vpt.norm(
-        #     dim=-1, keepdim=True
-        # )
-
         return image_features_vpt
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -244,7 +173,7 @@ class VisionPromptCLIP(nn.Module):
         logits : torch.Tensor
             Output logits tensor
         """
-        # retrive image features 
+        # retrive image features
         image_features_vpt = self.encode_image(x)
 
         with torch.no_grad():
@@ -257,19 +186,86 @@ class VisionPromptCLIP(nn.Module):
         self.prompt_dropout.train()
         return logits
 
+    def forward_deep_prompt(self, embedding_output):
+        """
+        Forward pass of Vision Prompt CLIP with deep prompt
+
+        Parameters
+        ----------
+        `embedding_output` : torch.Tensor
+            input embedding tensor
+
+        Returns
+        -------
+        `encoded` : torch.Tensor
+            encoded tensor
+        `attn_weights` : list
+            list of attention weights
+        """
+        # setup for deep prompt
+        attn_weights = []  # query, key, value
+        hidden_states = None
+        weights = None
+        B = embedding_output.shape[0]  # hidden_dim
+        num_layers = self.ViT.transformer.layers
+
+        for i in range(num_layers):
+            if i == 0:
+                hidden_states = self.ViT.transformer.resblocks[i](embedding_output)
+
+            else:
+                if i <= self.deep_prompt_embeddings.shape[0]:
+                    deep_prompt_emb = self.prompt_dropout(
+                        self.prompt_proj(self.deep_prompt_embeddings[i - 1]).expand(
+                            B, -1, -1
+                        )
+                    )
+
+                    hidden_states = torch.cat(
+                        (
+                            hidden_states[:, :1, :],
+                            deep_prompt_emb,
+                            hidden_states[:, (1 + self.num_tokens) :, :],
+                        ),
+                        dim=1,
+                    )
+
+                hidden_states = self.ViT.transformer.resblocks[i](hidden_states)
+
+        hidden_states = hidden_states.permute(1, 0, 2) # (batch_size, seq_len, dim)
+        input_embedding = self.ViT.ln_post(
+            hidden_states[:, 0, :]
+        )  # (batch_size, hidden_dim)
+
+        # project to output dim
+        if self.ViT.output_dim != input_embedding.shape[-1]:
+            encoded = (
+                input_embedding @ self.ViT.proj
+            )  # (batch_size, output_dim)
+        return encoded
+
     def linear_probe(self, x: torch.Tensor) -> torch.Tensor:
         """
         Linear probe of Vision Prompt CLIP
         """
+        if self.prompt_config.DEEP:
+            img = x
+            # incorporate prompt
+            incoporated_prompt = self.incorporate_prompt(
+                img
+            )  # (batch_size, 1 + n_patches + n_prompt, hidden_dim)
 
-        # Ground Truth for debugging
-        # with torch.no_grad():
-        #     image_features = self.model.encode_image(x)
+            # reform embedding to match CLIP
+            incoporated_prompt = incoporated_prompt.permute(
+                1, 0, 2
+            )  # (1 + n_patches + n_prompt, batch_size, hidden_dim)
 
-        image_features = self.encode_image(x)
+            encoded = self.forward_deep_prompt(incoporated_prompt)
+        else:
+            encoded = self.encode_image(x)
 
         self.head.train()
-        logits = self.head(image_features)
+        logits = self.head(encoded)
         return logits
 
     def train(self):

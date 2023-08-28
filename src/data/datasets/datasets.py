@@ -129,8 +129,8 @@ class CUB200Dataset(JSONDataset):
 class CarsDataset(JSONDataset):
     """stanford-cars dataset."""
 
-    def __init__(self, cfg, split):
-        super(CarsDataset, self).__init__(cfg, split)
+    def __init__(self, cfg, split, transform):
+        super(CarsDataset, self).__init__(cfg, split, transform)
 
     def get_imagedir(self):
         return self.data_dir

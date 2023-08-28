@@ -4,7 +4,7 @@ src/data/Rice_Image_Dataset/Ipsala
 src/data/Rice_Image_Dataset/Jasmine
 src/data/Rice_Image_Dataset/Karacadag
 src/data/Rice_Image_Dataset/Kasmati
-src/data/stanford-cars
+src/data/stanfordcars
 src/data/stanford-dogs
 src/data/food-101
 src/data/CUB_200_2011

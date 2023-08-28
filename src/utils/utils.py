@@ -87,6 +87,7 @@ def setup_clip(args: argparse.Namespace) -> tuple:
     # set up prompt config
     prompt_config = get_cfg().MODEL.PROMPT
     prompt_config.PROJECT = 768
+    prompt_config.DEEP = args.deep
 
     # set up dataset config from yaml file
 

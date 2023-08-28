@@ -9,6 +9,7 @@ from torch.cuda.amp import autocast
 import matplotlib.pyplot as plt
 from src.model.vpt_clip.vpt_clip import VisionPromptCLIP
 from src.utils.utils import setup_clip
+from src.model.vpt.src.solver.lr_scheduler import WarmupCosineSchedule
 
 
 # main function to call from workflow
@@ -33,6 +34,12 @@ def main():
         type=str,
         default="food-101",
         help="For Saving and loading the current Model",
+    )
+    parser.add_argument(
+        "--deep",
+        type=bool,
+        default=False,
+        help="Whether to use deep prompt or not",
     )
 
     args = parser.parse_args()
@@ -76,28 +83,28 @@ def main():
     labels = []
 
     # define optimizer and loss function, update only one parameter linear in the model
-    parameters = (
+    prompt_parameters = (
         list(model.head.parameters())
         + list(model.prompt_dropout.parameters())
         + list(model.prompt_proj.parameters())
     )
-    optimizer = torch.optim.SGD(
-        parameters,
-        lr=dataset_config.SOLVER.BASE_LR,
-        weight_decay=dataset_config.SOLVER.WEIGHT_DECAY,
-    )
 
-    max_epochs = 20
-    warm_up_epochs = 5
+    optimizer = torch.optim.AdamW(prompt_parameters, lr=1e-3, weight_decay=1e-5)
+
+    max_epochs = 30
+    warm_up_epochs = 10
     loss_fn = torch.nn.CrossEntropyLoss()
 
-    pbar = tqdm(train_loader)
     torch.autograd.set_detect_anomaly(True)
+    # scheduler = WarmupCosineSchedule(
+    #     optimizer, warmup_steps=warm_up_epochs, t_total=max_epochs
+    # )
+    loss_step = []
+    accuracy_step = []
+
     for epoch in range(warm_up_epochs + max_epochs):
-        loss_step = []
-        accuracy_step = []
+        pbar = tqdm(train_loader)
         for img, label, idx in pbar:
-            
             # mixed precision training
             with autocast():
                 # calculate logits
@@ -126,13 +133,22 @@ def main():
 
             # print loss and accuracy in each batch inside tqdm
             pbar.set_description(
-                "Epoch [{}/{}] Loss: {:.4f} Accuracy: {:.2f}%".format(
+                "Warmup Epoch [{}/{}] Loss: {:.4f} Accuracy: {:.2f}%".format(
                     epoch + 1,
+                    warm_up_epochs,
+                    loss.item(),
+                    accuracy * 100,
+                )
+                if epoch < warm_up_epochs
+                else "Epoch [{}/{}] Loss: {:.4f} Accuracy: {:.2f}%".format(
+                    epoch + 1 - warm_up_epochs,
                     max_epochs,
                     loss.item(),
                     accuracy * 100,
                 )
             )
+        # update learning rate
+        # scheduler.step()
 
     # calculate accuracy
     predicted = np.concatenate(predicted)
