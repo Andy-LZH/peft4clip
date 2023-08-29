@@ -88,8 +88,7 @@ def main():
         + list(model.prompt_dropout.parameters())
         + list(model.prompt_proj.parameters())
     )
-
-    optimizer = torch.optim.AdamW(prompt_parameters, lr=1e-3, weight_decay=1e-5)
+    optimizer = torch.optim.AdamW(prompt_parameters, lr=dataset_config.SOLVER.BASE_LR, weight_decay=1e-4)
 
     max_epochs = 30
     warm_up_epochs = 10
