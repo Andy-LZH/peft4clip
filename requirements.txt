@@ -2,3 +2,11 @@ git+https://github.com/openai/CLIP.git
 ftfy 
 regex 
 tqdm
+fvcore
+ml_collections
+kaggle
+opencv-python 
+scipy
+simplejson
+matplotlib
+pandas
