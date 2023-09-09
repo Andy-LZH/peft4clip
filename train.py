@@ -1,8 +1,7 @@
 import clip
 import torch
 import argparse
-from time import sleep
-from src.model.vpt_clip.vpt_clip import VisionPromptCLIP
+from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
 from src.utils.utils import setup_clip
 from src.engine.engines import Engine
 

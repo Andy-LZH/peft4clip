@@ -21,11 +21,7 @@ class Engine:
 
         # setup hyperparameters
         ## setup optimizer
-        self.prompt_parameters = (
-            list(model.head.parameters())
-            + list(model.prompt_dropout.parameters())
-            + list(model.prompt_proj.parameters())
-        )
+        self.prompt_parameters = model.head.parameters()
         self.optimizer = torch.optim.AdamW(
             params=self.prompt_parameters,
             lr=configs.SOLVER.BASE_LR,
@@ -64,7 +60,7 @@ class Engine:
                 # mixed precision training
                 with autocast():
                     # calculate logits
-                    logits = self.model.linear_probe(img.to(self.device))
+                    logits = self.model(img.to(self.device))
                     assert logits.dtype == torch.float16
 
                     # calculate loss
@@ -152,7 +148,7 @@ class Engine:
         """
         Evaluate the model.
         """
-        
+
         # test model
         self.model.eval()
 

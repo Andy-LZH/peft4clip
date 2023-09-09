@@ -1,13 +1,17 @@
-# Utility functions for the Auto-Adapter project
+"""
+Utility functions for the Auto-Adapter project
+
+Edited upon code from https://github.com/kmnp/vpt
+"""
 
 import clip
 import argparse
-from src.model.vpt.src.configs.vit_configs import (
+from src.configs.vit_configs import (
     get_b32_config,
     get_h14_config,
     get_b16_config,
 )
-from src.model.vpt.src.configs.config import get_cfg
+from src.configs.config import get_cfg
 from src.data.loader import build_train_loader, build_test_loader
 import os
 
