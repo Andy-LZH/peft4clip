@@ -100,6 +100,17 @@ class Engine:
                     )
                 )
 
+        # check if logs folder exists
+        if not os.path.exists("./src/logs"):
+            os.makedirs("./src/logs")
+
+        if not os.path.exists(
+            "./src/logs/{}/epochs{}/".format(self.dataset_name, self.max_epochs)
+        ):
+            os.makedirs(
+                "./src/logs/{}/epochs{}/".format(self.dataset_name, self.max_epochs)
+            )
+
         # save model
         torch.save(
             self.model.state_dict(),
@@ -113,17 +124,6 @@ class Engine:
 
         accuracy = (predicted == labels).mean()
         print(f"Train Accuracy = {accuracy}")
-
-        # check if logs folder exists
-        if not os.path.exists("./src/logs"):
-            os.makedirs("./src/logs")
-
-        if not os.path.exists(
-            "./src/logs/{}/epochs{}/".format(self.dataset_name, self.max_epochs)
-        ):
-            os.makedirs(
-                "./src/logs/{}/epochs{}/".format(self.dataset_name, self.max_epochs)
-            )
 
         # draw loss and accuracy using matplotlib
         plt.plot(loss_step)
