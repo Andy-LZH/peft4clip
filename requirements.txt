@@ -10,3 +10,4 @@ scipy
 simplejson
 matplotlib
 pandas
+scikit-learn
