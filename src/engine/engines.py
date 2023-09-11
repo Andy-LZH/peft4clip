@@ -37,6 +37,8 @@ class Engine:
 
         ## setup logging
         self.dataset_name = configs.DATA.NAME
+        self.model_name = configs.MODEL.TYPE
+        print("Model: {}".format(self.model_name))
 
     def train(self):
         """
@@ -105,18 +107,21 @@ class Engine:
             os.makedirs("./src/logs")
 
         if not os.path.exists(
-            "./src/logs/{}/epochs{}/".format(self.dataset_name, self.max_epochs)
+            "./src/logs/{}/{}/epochs{}/".format(self.dataset_name, self.model_name, self.max_epochs)
         ):
             os.makedirs(
-                "./src/logs/{}/epochs{}/".format(self.dataset_name, self.max_epochs)
+                "./src/logs/{}/{}/epochs{}/".format(
+                    self.dataset_name, self.model_name, self.max_epochs
+                )
             )
 
+        base_dir = "./src/logs/{}/{}/epochs{}/".format(
+            self.dataset_name, self.model_name, self.max_epochs
+        )
         # save model
         torch.save(
             self.model.state_dict(),
-            "./src/logs/{}/epochs{}/model.pth".format(
-                self.dataset_name, self.max_epochs
-            ),
+            base_dir + "model.pth".format(self.dataset_name, self.max_epochs),
         )
         # calculate training accuracy
         predicted = np.concatenate(predicted)
@@ -130,18 +135,14 @@ class Engine:
         plt.title("Loss")
         plt.xlabel("Step")
         plt.ylabel("Loss")
-        plt.savefig(
-            "./src/logs/{}/epochs{}/loss.png".format(self.dataset_name, self.max_epochs)
-        )
+        plt.savefig(base_dir + "loss.png".format(self.dataset_name, self.max_epochs))
 
         plt.plot(accuracy_step)
         plt.title("Accuracy")
         plt.xlabel("Step")
         plt.ylabel("Accuracy")
         plt.savefig(
-            "./src/logs/{}/epochs{}/accuracy.png".format(
-                self.dataset_name, self.max_epochs
-            )
+            base_dir + "accuracy.png".format(self.dataset_name, self.max_epochs)
         )
 
     def evaluate(self):
@@ -157,16 +158,16 @@ class Engine:
             raise ValueError("No logs folder found, please train the model first")
 
         if not os.path.exists(
-            "./src/logs/{}/epochs{}/model.pth".format(
-                self.dataset_name, self.max_epochs
+            "./src/logs/{}/{}/epochs{}/model.pth".format(
+                self.dataset_name, self.model_name, self.max_epochs
             ),
         ):
             raise ValueError("No model found, please train the model first")
 
         self.model.load_state_dict(
             torch.load(
-                "./src/logs/{}/epochs{}/model.pth".format(
-                    self.dataset_name, self.max_epochs
+                "./src/logs/{}/{}/epochs{}/model.pth".format(
+                    self.dataset_name, self.model_name, self.max_epochs
                 ),
                 map_location=self.device,
             )
@@ -178,7 +179,7 @@ class Engine:
         with torch.no_grad():
             for img, label, idx in tqdm(self.test_loader):
                 with autocast():
-                    logits = self.model.linear_probe(img.to(self.device))
+                    logits = self.model(img.to(self.device))
                     _, indices = logits.max(1)
                     predicted.append(indices.cpu().numpy())
                     labels.append(label.cpu().numpy())
@@ -191,8 +192,8 @@ class Engine:
 
         # save results
         with open(
-            "./src/logs/{}/epochs{}/results.txt".format(
-                self.dataset_name, self.max_epochs
+            "./src/logs/{}/{}/epochs{}/results.txt".format(
+                self.dataset_name, self.model_name, self.max_epochs
             ),
             "w",
         ) as f:

@@ -9,10 +9,10 @@ src/data/stanfordcars
 src/data/stanford-dogs
 src/data/food-101
 src/data/CUB_200_2011
-src/logs/StanfordCars/epochs0/model.pth
+*model.pth
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__/
 *.py[cod]
 *$py.class
 
