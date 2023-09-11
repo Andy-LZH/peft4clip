@@ -9,6 +9,9 @@ src/data/stanfordcars
 src/data/stanford-dogs
 src/data/food-101
 src/data/CUB_200_2011
+src/data/nabirds
+src/data/oxford-flowers
+
 *model.pth
 
 # Byte-compiled / optimized / DLL files

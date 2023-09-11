@@ -14,7 +14,7 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="ViT-B/32",
+        default="ViT-B32",
         help="For Saving and loading the current Model",
     )
     parser.add_argument(

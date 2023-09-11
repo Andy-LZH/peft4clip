@@ -119,8 +119,8 @@ class JSONDataset(torch.utils.data.Dataset):
 class CUB200Dataset(JSONDataset):
     """CUB_200 dataset."""
 
-    def __init__(self, cfg, split):
-        super(CUB200Dataset, self).__init__(cfg, split)
+    def __init__(self, cfg, split, transform):
+        super(CUB200Dataset, self).__init__(cfg, split, transform)
 
     def get_imagedir(self):
         return os.path.join(self.data_dir, "images")
@@ -139,8 +139,8 @@ class CarsDataset(JSONDataset):
 class DogsDataset(JSONDataset):
     """stanford-dogs dataset."""
 
-    def __init__(self, cfg, split):
-        super(DogsDataset, self).__init__(cfg, split)
+    def __init__(self, cfg, split, transform):
+        super(DogsDataset, self).__init__(cfg, split, transform)
 
     def get_imagedir(self):
         return os.path.join(self.data_dir, "Images")
@@ -149,8 +149,8 @@ class DogsDataset(JSONDataset):
 class FlowersDataset(JSONDataset):
     """flowers dataset."""
 
-    def __init__(self, cfg, split):
-        super(FlowersDataset, self).__init__(cfg, split)
+    def __init__(self, cfg, split, transform):
+        super(FlowersDataset, self).__init__(cfg, split, transform)
 
     def get_imagedir(self):
         return self.data_dir
@@ -159,8 +159,8 @@ class FlowersDataset(JSONDataset):
 class NabirdsDataset(JSONDataset):
     """Nabirds dataset."""
 
-    def __init__(self, cfg, split):
-        super(NabirdsDataset, self).__init__(cfg, split)
+    def __init__(self, cfg, split, transform):
+        super(NabirdsDataset, self).__init__(cfg, split, transform)
 
     def get_imagedir(self):
         return os.path.join(self.data_dir, "images")
