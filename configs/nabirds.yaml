@@ -1,9 +1,7 @@
-_BASE_: "../base-prompt.yaml"
-RUN_N_TIMES: 1
 DATA:
   NAME: "nabirds"
-  DATAPATH: ""  #TODO: need to specify here
-  NUMBER_CLASSES: 555
+  DATAPATH: "src/data/nabirds"  #TODO: need to specify here
+  NUMBER_CLASSES: 1010
   MULTILABEL: False
 MODEL:
   TYPE: "vit"
