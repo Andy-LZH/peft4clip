@@ -1,9 +1,13 @@
 """
-Edited upon code from https://github.com/kmnp/vpt
+Borrowed code from https://github.com/kmnp/vpt
 """
+import math
 import torch
 import torch.nn as nn
 from torch.nn.modules.utils import _pair
+from functools import reduce
+from operator import mul
+from src.model.CLIP_VPT.Embeddings import CLIPInputEmbedding
 
 
 class VisionPromptCLIP(nn.Module):
@@ -11,6 +15,7 @@ class VisionPromptCLIP(nn.Module):
         self,
         backbone: nn.Module,
         config,
+        dataset_config,
         prompt_config,
         prompts,
         img_size=224,
@@ -40,16 +45,70 @@ class VisionPromptCLIP(nn.Module):
         self.ViT = self.model.visual
 
         # set prompt configs
-        self.num_tokens = self.prompt_config.NUM_TOKENS
+        self.num_tokens = dataset_config.MODEL.PROMPT.NUM_TOKENS
         self.prompt_dropout = nn.Dropout(0.2)
-
-        # output layer
-        self.head = nn.Linear(self.ViT.output_dim, num_classes)
 
         print("Setting up prompt...")
         print("Project: ", self.prompt_config.PROJECT)
 
-   
+        # if project the prompt embeddings
+        if self.prompt_config.PROJECT > -1:
+            # only for prepend / add
+            prompt_dim = self.prompt_config.PROJECT
+            self.prompt_proj = nn.Linear(prompt_dim, config.hidden_size)
+            nn.init.kaiming_normal_(self.prompt_proj.weight, a=0, mode="fan_out")
+        else:
+            prompt_dim = config.hidden_size
+            self.prompt_proj = nn.Identity()
+
+        # initiate prompt:
+        if self.prompt_config.INITIATION == "random":
+            val = math.sqrt(
+                6.0 / float(3 * reduce(mul, self.patch_size, 1) + prompt_dim)
+            )  # noqa
+
+            self.prompt_embeddings = nn.Parameter(
+                torch.zeros(1, self.num_tokens, prompt_dim)
+            )
+
+            # xavier_uniform initialization
+            nn.init.uniform_(self.prompt_embeddings.data, -val, val)
+
+            if self.prompt_config.DEEP:  # noqa
+                total_d_layer = config.transformer["num_layers"] - 1
+                self.deep_prompt_embeddings = nn.Parameter(
+                    torch.zeros(total_d_layer, self.num_tokens, prompt_dim)
+                )
+                # xavier_uniform initialization
+                nn.init.uniform_(self.deep_prompt_embeddings.data, -val, val)
+
+        # set embedding layer
+        self.embeddings = CLIPInputEmbedding(ViT=self.ViT)
+        # output layer
+        self.head = nn.Linear(self.ViT.output_dim, num_classes)
+
+    def incorporate_prompt(self, x: torch.Tensor) -> torch.Tensor:
+        batch_size = x.shape[0]
+        x = self.embeddings(x)  # (batch_size, num_patches**2 + 1, hidden_dim)
+
+        self.prompt_embed_multi_dim = self.prompt_embeddings.expand(batch_size, -1, -1)
+
+        # add learnable context prompt of shape (1, num_tokens, hidden_dim)
+        # (batch_size, 1 + num_tokens + num_patches**2, hidden_dim)
+        x = torch.cat(
+            (
+                x[:, :1, :],
+                self.prompt_dropout(self.prompt_proj(self.prompt_embed_multi_dim)),
+                x[:, 1:, :],
+            ),
+            dim=1,
+        )
+
+        # reshape to (1 + num_tokens + num_patches**2, batch_size, hidden_dim) for matmul
+        x = x.permute(1, 0, 2)
+
+        return x
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass of Vision Prompt CLIP
@@ -64,6 +123,22 @@ class VisionPromptCLIP(nn.Module):
         logits : torch.Tensor
             Output logits tensor
         """
-        # retrive image features
-        img_features = self.ViT(x)
-        return self.head(img_features)
+        # consturct prompt embedding
+        x = self.incorporate_prompt(x)
+
+        # feed to transformer
+        x = self.ViT.transformer(x)
+
+        # reformate to (batch_size, 1 + num_tokens + num_patches**2, hidden_dim)
+        x = x.permute(1, 0, 2)
+
+        # take the first token + extra token
+        x = x[:, 0, :]
+        print("x shape: ", x.shape)
+
+        x = self.ViT.ln_post(x)
+
+        if self.ViT.proj is not None:
+            x = x @ self.ViT.proj
+        print("x shape: ", x.shape)
+        return self.head(x)

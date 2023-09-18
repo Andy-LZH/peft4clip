@@ -102,7 +102,7 @@ _C.SOLVER.BIAS_MULTIPLIER = 1.              # for prompt + bias
 
 _C.SOLVER.WARMUP_EPOCH = 5
 _C.SOLVER.TOTAL_EPOCH = 30
-_C.SOLVER.LOG_EVERY_N = 1000
+_C.SOLVER.LOG_EVERY_N = 100
 
 
 _C.SOLVER.DBG_TRAINABLE = False # if True, will print the name of trainable params

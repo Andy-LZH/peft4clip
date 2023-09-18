@@ -21,11 +21,17 @@ class Engine:
 
         # setup hyperparameters
         ## setup optimizer
-        self.prompt_parameters = model.head.parameters()
-        self.optimizer = torch.optim.AdamW(
+        self.prompt_parameters = (
+            list(model.head.parameters())
+            + list(model.prompt_dropout.parameters())
+            + list(model.prompt_proj.parameters())
+        )
+
+        self.optimizer = torch.optim.SGD(
             params=self.prompt_parameters,
             lr=configs.SOLVER.BASE_LR,
             weight_decay=configs.SOLVER.WEIGHT_DECAY,
+            momentum=configs.SOLVER.MOMENTUM,
         )
 
         ## setup loss function
@@ -63,6 +69,7 @@ class Engine:
                 with autocast():
                     # calculate logits
                     logits = self.model(img.to(self.device))
+                    print(logits.shape)
                     assert logits.dtype == torch.float16
 
                     # calculate loss
@@ -107,7 +114,9 @@ class Engine:
             os.makedirs("./src/logs")
 
         if not os.path.exists(
-            "./src/logs/{}/{}/epochs{}/".format(self.dataset_name, self.model_name, self.max_epochs)
+            "./src/logs/{}/{}/epochs{}/".format(
+                self.dataset_name, self.model_name, self.max_epochs
+            )
         ):
             os.makedirs(
                 "./src/logs/{}/{}/epochs{}/".format(

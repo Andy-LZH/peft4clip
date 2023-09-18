@@ -68,6 +68,7 @@ def main():
     model = VisionPromptCLIP(
         backbone=backbone,
         config=config,
+        dataset_config=dataset_config,
         prompt_config=prompt_config,
         img_size=img_size,
         num_classes=num_classes,
