@@ -46,7 +46,7 @@ class VisionPromptCLIP(nn.Module):
 
         # set prompt configs
         self.num_tokens = dataset_config.MODEL.PROMPT.NUM_TOKENS
-        self.prompt_dropout = nn.Dropout(0.2)
+        self.prompt_dropout = nn.Dropout(0.1)
 
         print("Setting up prompt...")
         print("Project: ", self.prompt_config.PROJECT)
@@ -134,11 +134,10 @@ class VisionPromptCLIP(nn.Module):
 
         # take the first token + extra token
         x = x[:, 0, :]
-        print("x shape: ", x.shape)
 
         x = self.ViT.ln_post(x)
 
         if self.ViT.proj is not None:
             x = x @ self.ViT.proj
-        print("x shape: ", x.shape)
+
         return self.head(x)

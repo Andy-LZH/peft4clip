@@ -69,7 +69,6 @@ class Engine:
                 with autocast():
                     # calculate logits
                     logits = self.model(img.to(self.device))
-                    print(logits.shape)
                     assert logits.dtype == torch.float16
 
                     # calculate loss
