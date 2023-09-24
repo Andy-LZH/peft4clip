@@ -6,8 +6,10 @@ DATA:
   CLASSESPATH: "src/data/food-101/meta/labels.txt"
 MODEL:
   TYPE: "vit"
+  PROMPT:
+    NUM_TOKENS: 50
 SOLVER:
-  BASE_LR: 0.01
+  BASE_LR: 1.0
   WEIGHT_DECAY: 0.0001
   MOMENTUM: 0.9
   TOTAL_EPOCH: 1
