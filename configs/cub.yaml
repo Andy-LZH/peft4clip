@@ -1,12 +1,13 @@
-_BASE_: "../base-prompt.yaml"
-RUN_N_TIMES: 1
 DATA:
   NAME: "CUB"
-  DATAPATH: ""  #TODO: need to specify here
+  DATAPATH: "src/data/CUB_200_2011"  #TODO: need to specify here
   NUMBER_CLASSES: 200
   MULTILABEL: False
+  CLASSESPATH: "src/data/CUB_200_2011/labels.txt"
 MODEL:
   TYPE: "vit"
 SOLVER:
-  BASE_LR: 0.1
-  WEIGHT_DECAY: 0.01
+  BASE_LR: 0.01
+  WEIGHT_DECAY: 0.0001
+  TOTAL_EPOCH: 4
+  WARMUP_EPOCH: 0

@@ -6,9 +6,11 @@ DATA:
   CLASSESPATH: "src/data/stanfordcars/meta/labels.txt"
 MODEL:
   TYPE: "vit"
+  PROMPT:
+    NUM_TOKENS: 100
 SOLVER:
-  BASE_LR: 0.3
+  BASE_LR: 10.0
   WEIGHT_DECAY: 0.0001
-  TOTAL_EPOCH: 5
+  TOTAL_EPOCH: 10
   WARMUP_EPOCH: 0
-
+  MOMENTUM: 0.9
