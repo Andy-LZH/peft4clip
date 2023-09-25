@@ -71,7 +71,6 @@ class Engine:
                     logits = self.model(img.to(self.device))
                     assert logits.dtype == torch.float16
 
-                    print(img.shape, label)
                     # calculate loss
                     loss = self.criterion(logits, label.to(self.device))
                     loss = torch.sum(loss) / logits.shape[0]
