@@ -11,7 +11,17 @@ src/data/food-101
 src/data/CUB_200_2011
 src/data/nabirds
 src/data/oxford-flowers
-
+src/data/caltech101
+src/data/cifar100
+src/data/clevr
+src/data/dmlab/*
+src/data/dtd/*
+stc/data/eurosat/*
+src/data/eurosat/.config
+src/data/eurosat/rgb
+src/data/oxford_iiit_pet/*
+src/data/patch_camelyon/*
+src/data/svhn_cropped/*
 *model.pth
 
 # Byte-compiled / optimized / DLL files
