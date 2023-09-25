@@ -1,3 +1,4 @@
+import os
 import clip
 import torch
 import argparse
@@ -84,12 +85,21 @@ def main():
         configs=dataset_config,
     )
 
-    if not args.evluate:
+    # train the model
+    model_path = "./src/logs/{}/{}/epochs{}/model.pth".format(
+        dataset_config.DATA.NAME,
+        dataset_config.MODEL.TYPE,
+        dataset_config.SOLVER.TOTAL_EPOCH,
+    )
+
+    if not args.evluate or not os.path.exists(model_path):
         # evluate the model
         engine.train()
+        engine.evaluate()
 
-    # evaluate the model
-    engine.evaluate()
+    else:
+        # evaluate the model
+        engine.evaluate()
 
 
 if __name__ == "__main__":

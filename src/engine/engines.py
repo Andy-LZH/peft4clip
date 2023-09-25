@@ -185,7 +185,7 @@ class Engine:
         print("Evaluating Vision Prompt CLIP...")
         print("Press Ctrl+C to stop evaluation")
         with torch.no_grad():
-            for img, label, idx in tqdm(self.test_loader):
+            for img, label in tqdm(self.test_loader):
                 with autocast():
                     logits = self.model(img.to(self.device))
                     _, indices = logits.max(1)
