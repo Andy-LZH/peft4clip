@@ -1,5 +1,5 @@
 DATA:
-  NAME: "vtab-cifar100"
+  NAME: "vtab-cifar(num_classes=100)"
   DATAPATH: ""
   NUMBER_CLASSES: 100
   MULTILABEL: False
