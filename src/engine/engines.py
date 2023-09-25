@@ -64,13 +64,14 @@ class Engine:
         torch.autograd.set_detect_anomaly(True)
         for epoch in range(self.warm_up_epochs + self.max_epochs):
             pbar = tqdm(self.train_loader)
-            for img, label, idx in pbar:
+            for img, label in pbar:
                 # mixed precision training
                 with autocast():
                     # calculate logits
                     logits = self.model(img.to(self.device))
                     assert logits.dtype == torch.float16
 
+                    print(img.shape, label)
                     # calculate loss
                     loss = self.criterion(logits, label.to(self.device))
                     loss = torch.sum(loss) / logits.shape[0]

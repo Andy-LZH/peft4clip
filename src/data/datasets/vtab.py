@@ -31,8 +31,6 @@ from ..vtab_datasets import sun397
 from ..vtab_datasets import svhn
 from ..vtab_datasets.registry import Registry
 
-from ...utils import logging
-logger = logging.get_logger("visual_prompt")
 tf.config.experimental.set_visible_devices([], 'GPU')  # set tensorflow to not use gpu  # noqa
 DATASETS = [
     'caltech101',
@@ -58,7 +56,7 @@ DATASETS = [
 
 
 class TFDataset(torch.utils.data.Dataset):
-    def __init__(self, cfg, split):
+    def __init__(self, cfg, split, transform=None):
         assert split in {
             "train",
             "val",
@@ -66,15 +64,13 @@ class TFDataset(torch.utils.data.Dataset):
             "trainval"
         }, "Split '{}' not supported for {} dataset".format(
             split, cfg.DATA.NAME)
-        logger.info("Constructing {} dataset {}...".format(
-            cfg.DATA.NAME, split))
 
         self.cfg = cfg
         self._split = split
         self.name = cfg.DATA.NAME
 
-        self.img_mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
-        self.img_std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+        self.img_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1)
+        self.img_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1)
 
         self.get_data(cfg, split)
 
@@ -86,8 +82,8 @@ class TFDataset(torch.utils.data.Dataset):
         self._targets = [int(t[1].numpy()[0]) for t in data_list]
         self._class_ids = sorted(list(set(self._targets)))
 
-        logger.info("Number of images: {}".format(len(self._image_tensor_list)))
-        logger.info("Number of classes: {} / {}".format(
+        print("Number of images: {}".format(len(self._image_tensor_list)))
+        print("Number of classes: {} / {}".format(
             len(self._class_ids), self.get_class_num()))
 
         del data_list
@@ -135,12 +131,7 @@ class TFDataset(torch.utils.data.Dataset):
             index = index
         else:
             index = f"{self._split}{index}"
-        sample = {
-            "image": im,
-            "label": label,
-            # "id": index
-        }
-        return sample
+        return im, label
 
     def __len__(self):
         return len(self._targets)

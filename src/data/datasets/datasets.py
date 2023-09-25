@@ -110,7 +110,7 @@ class JSONDataset(torch.utils.data.Dataset):
         else:
             index = f"{self._split}{index}"
             
-        return im, label, index
+        return im, label
 
     def __len__(self):
         return len(self._imdb)

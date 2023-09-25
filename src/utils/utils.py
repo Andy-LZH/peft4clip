@@ -12,7 +12,11 @@ from src.configs.vit_configs import (
     get_b16_config,
 )
 from src.configs.config import get_cfg
-from src.data.loader import build_train_loader, build_test_loader
+from src.data.loader import (
+    build_train_loader,
+    build_test_loader,
+    construct_trainval_loader,
+)
 import os
 
 _DATASET_CONFIG = {
@@ -21,7 +25,13 @@ _DATASET_CONFIG = {
     "OxfordFlowers": "configs/flowers.yaml",
     "StanfordCars": "configs/cars.yaml",
     "StanfordDogs": "configs/dogs.yaml",
-    "nabirds": "configs/nabirds.yaml",
+    "vtab-caltech101": "configs/caltech101.yaml",
+    "vtab-cifar100": "configs/cifar100.yaml",
+    "vtab-dtd": "configs/dtd.yaml",
+    "vtab-eurosat": "configs/eurosat.yaml",
+    "vtab-oxford_pet": "configs/oxford_pet.yaml",
+    "vtab-pcam": "configs/pcam.yaml",
+    "vtab-svhncropped": "configs/svhncropped.yaml",
 }
 
 
@@ -60,17 +70,10 @@ def setup_clip(args: argparse.Namespace) -> tuple:
         raise ValueError("Device not supported yet, please choose from cuda, cpu")
 
     # check if data is valid
-    if args.data not in [
-        "Rice_Image_Dataset",
-        "food-101",
-        "CUB",
-        "OxfordFlowers",
-        "StanfordCars",
-        "StanfordDogs",
-        "nabirds",
-    ]:
+    if args.data not in _DATASET_CONFIG.keys():
+        print(args.data)
         raise ValueError(
-            "Dataset not supported yet, please choose from [Rice_Image_Dataset, food-101, CUB, OxfordFlowers, StanfordCars, StanfordDogs, nabirds]"
+            ("Dataset not supported yet, please choose from ", _DATASET_CONFIG.keys())
         )
 
     # set up model config
@@ -103,6 +106,7 @@ def setup_clip(args: argparse.Namespace) -> tuple:
 
     # read classes info from url from yaml file
     classes_path = cfg.DATA.CLASSESPATH
+    print(classes_path)
     cfg.MODEL.TYPE = args.model
     if not os.path.exists(classes_path):
         raise ValueError(
@@ -115,7 +119,10 @@ def setup_clip(args: argparse.Namespace) -> tuple:
     cfg.freeze()
 
     # set up dataset read from yaml file
-    train_loader = build_train_loader(cfg, transform=preprocess)
+    if args.data.startswith("vtab-"):
+        train_loader = construct_trainval_loader(cfg, transform=preprocess)
+    else:
+        train_loader = build_train_loader(cfg, transform=preprocess)
     test_loader = build_test_loader(cfg, transform=preprocess)
 
     return model, model_config, prompt_config, train_loader, test_loader, cfg
