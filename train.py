@@ -1,9 +1,7 @@
 import os
-import clip
-import torch
 import argparse
 from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
-from src.utils.utils import setup_clip
+from src.utils.utils import setup_model
 from src.engine.engines import Engine
 
 
@@ -14,6 +12,12 @@ def main():
     # check cuda availability
     parser.add_argument(
         "--model",
+        type=str,
+        default="VPT-CLIP-Shallow",
+        help="For Saving and loading the current Model",
+    )
+    parser.add_argument(
+        "--backbone",
         type=str,
         default="ViT-B16",
         help="For Saving and loading the current Model",
@@ -31,12 +35,6 @@ def main():
         help="For Saving and loading the current Model",
     )
     parser.add_argument(
-        "--deep",
-        type=bool,
-        default=False,
-        help="Whether to use deep prompt or not",
-    )
-    parser.add_argument(
         "--evluate",
         type=bool,
         default=False,
@@ -47,34 +45,11 @@ def main():
     print(args)
     # set up cfg and args
     (
-        backbone,
-        config,
-        prompt_config,
+        model,
         train_loader,
         test_loader,
         dataset_config,
-    ) = setup_clip(args)
-
-    print(dataset_config)
-
-    # construct text input
-    text_input = torch.cat(
-        [clip.tokenize(f"a photo of {c}") for c in dataset_config.DATA.CLASSES]
-    ).to(args.device)
-
-    # define data loaders
-    img_size = dataset_config.DATA.CROPSIZE
-    num_classes = dataset_config.DATA.NUMBER_CLASSES
-
-    model = VisionPromptCLIP(
-        backbone=backbone,
-        config=config,
-        dataset_config=dataset_config,
-        prompt_config=prompt_config,
-        img_size=img_size,
-        num_classes=num_classes,
-        prompts=text_input,
-    ).to(args.device)
+    ) = setup_model(args)
 
     # setup engine
     engine = Engine(
@@ -86,9 +61,10 @@ def main():
     )
 
     # train the model
-    model_path = "./src/logs/{}/{}/epochs{}/model.pth".format(
+    model_path = "./src/logs/{}/{}/{}/epochs{}/model.pth".format(
         dataset_config.DATA.NAME,
         dataset_config.MODEL.TYPE,
+        dataset_config.MODEL.BACKBONE,
         dataset_config.SOLVER.TOTAL_EPOCH,
     )
 

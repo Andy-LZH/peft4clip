@@ -46,8 +46,8 @@ class VanillaCLIP(nn.Module):
         # output layer
         self.head = nn.Linear(self.ViT.output_dim, num_classes)
 
-        print("Setting up prompt...")
-        print("Project: ", self.prompt_config.PROJECT)
+        # print("Setting up prompt...")
+        # print("Project: ", self.prompt_config.PROJECT)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """

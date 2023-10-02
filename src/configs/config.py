@@ -36,7 +36,8 @@ _C.MODEL.SAVE_CKPT = False
 
 _C.MODEL.MODEL_ROOT = ""  # root folder for pretrained model weights
 
-_C.MODEL.TYPE = "vit"
+_C.MODEL.TYPE = "VPT-CLIP-Shallow"
+_C.MODEL.BACKBONE = "ViT-B16"
 _C.MODEL.MLP_NUM = 0
 
 _C.MODEL.LINEAR = CfgNode()

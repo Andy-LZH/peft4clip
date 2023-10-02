@@ -1,7 +1,7 @@
 DATA:
-  NAME: "vtab-caltech101"
+  NAME: "vtab-patch_camelyon"
   DATAPATH: ""
-  NUMBER_CLASSES: 102
+  NUMBER_CLASSES: 2
   MULTILABEL: False
   CLASSESPATH: "src/data/caltech101/3.0.1/label.labels.txt"
 MODEL:
@@ -11,6 +11,6 @@ MODEL:
 SOLVER:
   BASE_LR: 10.0
   WEIGHT_DECAY: 0.0001
-  TOTAL_EPOCH: 10
+  TOTAL_EPOCH: 5
   WARMUP_EPOCH: 5
   MOMENTUM: 0.9

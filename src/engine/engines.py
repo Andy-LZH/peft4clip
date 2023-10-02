@@ -5,7 +5,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from torch.cuda.amp import autocast
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
+from time import sleep
 
 class Engine:
     """
@@ -21,18 +21,6 @@ class Engine:
 
         # setup hyperparameters
         ## setup optimizer
-        self.prompt_parameters = (
-            list(model.head.parameters())
-            + list(model.prompt_dropout.parameters())
-            + list(model.prompt_proj.parameters())
-        )
-
-        self.optimizer = torch.optim.SGD(
-            params=self.prompt_parameters,
-            lr=configs.SOLVER.BASE_LR,
-            weight_decay=configs.SOLVER.WEIGHT_DECAY,
-            momentum=configs.SOLVER.MOMENTUM,
-        )
 
         ## setup loss function
         self.criterion = torch.nn.CrossEntropyLoss()
@@ -45,6 +33,33 @@ class Engine:
         self.dataset_name = configs.DATA.NAME
         self.model_name = configs.MODEL.TYPE
         print("Model: {}".format(self.model_name))
+
+        # setup model configs
+        if self.model_name in ["VPT-CLIP-Shallow", "VPT-CLIP-Deep"]:
+            self.model_name = "{}-{}".format(self.model_name, configs.MODEL.BACKBONE)
+            self.prompt_parameters = (
+                list(model.head.parameters())
+                + list(model.prompt_dropout.parameters())
+                + list(model.prompt_proj.parameters())
+            )
+
+            self.optimizer = torch.optim.SGD(
+                params=self.prompt_parameters,
+                lr=configs.SOLVER.BASE_LR,
+                weight_decay=configs.SOLVER.WEIGHT_DECAY,
+                momentum=configs.SOLVER.MOMENTUM,
+            )
+
+        elif self.model_name == "VPT-CLIP-Linear":
+            self.model_name = "{}-{}".format(self.model_name, configs.MODEL.BACKBONE)
+            self.prompt_parameters = model.head.parameters()
+            self.optimizer = torch.optim.AdamW(
+                params=self.prompt_parameters,
+                lr=configs.SOLVER.BASE_LR,
+                weight_decay=configs.SOLVER.WEIGHT_DECAY,
+            )
+        else:
+            raise ValueError("Model not supported")
 
     def train(self):
         """
