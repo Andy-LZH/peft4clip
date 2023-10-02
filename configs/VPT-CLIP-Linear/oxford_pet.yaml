@@ -1,15 +1,15 @@
 DATA:
   NAME: "vtab-oxford_iiit_pet"
   DATAPATH: ""
-  NUMBER_CLASSES: 2
+  NUMBER_CLASSES: 37
   MULTILABEL: False
-  CLASSESPATH: "src/data/oxford_iiit_pet/3.2.0/species.labels.txt"
+  CLASSESPATH: "src/data/oxford_iiit_pet/3.2.0/label.labels.txt"
 MODEL:
   TYPE: "vit"
   PROMPT:
     NUM_TOKENS: 1
 SOLVER:
-  BASE_LR: 0.001
+  BASE_LR: 0.01
   WEIGHT_DECAY: 0.0001
   TOTAL_EPOCH: 5
   WARMUP_EPOCH: 5
