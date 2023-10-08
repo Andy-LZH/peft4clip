@@ -10,7 +10,7 @@ import torch
 import argparse
 from src.configs.vit_configs import (
     get_b32_config,
-    get_h14_config,
+    get_l16_config,
     get_b16_config,
 )
 from src.configs.config import get_cfg
@@ -92,7 +92,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
         model_config = get_b16_config()
         backbone_type = "ViT-B/16"
     elif args.backbone == "ViT-L14":
-        model_config = get_h14_config()
+        model_config = get_l16_config()
         backbone_type = "ViT-L/14"
     else:
         raise ValueError(

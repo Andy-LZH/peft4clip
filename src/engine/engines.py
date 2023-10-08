@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from torch.cuda.amp import autocast
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from time import sleep
+import matplotlib.pyplot as plt
 
 class Engine:
     """
@@ -91,6 +92,14 @@ class Engine:
                     loss = torch.sum(loss) / logits.shape[0]
                     assert loss.dtype == torch.float32
 
+                # # debug visualization
+                # print(img.shape)
+                # plt.imshow(img[0].permute(1, 2, 0).cpu().numpy())
+                # plt.savefig("./src/logs/vis.png")
+                # print(label[0].cpu().numpy())
+                # sleep(1)
+
+                # show label
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()

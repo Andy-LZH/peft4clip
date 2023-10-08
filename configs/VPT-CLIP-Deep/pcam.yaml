@@ -4,12 +4,13 @@ DATA:
   NUMBER_CLASSES: 2
   MULTILABEL: False
   CLASSESPATH: "src/data/patch_camelyon/2.0.0/classes.txt"
+  DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"
   PROMPT:
     NUM_TOKENS: 100
 SOLVER:
-  BASE_LR: 1.0
+  BASE_LR: 50.0
   WEIGHT_DECAY: 0.0001
   TOTAL_EPOCH: 5
   WARMUP_EPOCH: 5

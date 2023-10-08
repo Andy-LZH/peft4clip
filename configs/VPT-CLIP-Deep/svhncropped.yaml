@@ -1,9 +1,10 @@
 DATA:
-  NAME: "vtab-svhn_cropped"
+  NAME: "vtab-svhn"
   DATAPATH: ""
   NUMBER_CLASSES: 10
   MULTILABEL: False
   CLASSESPATH: "src/data/svhn_cropped/3.0.0/classes.txt"
+  DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"
   PROMPT:

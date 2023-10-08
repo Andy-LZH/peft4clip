@@ -1,5 +1,5 @@
 DATA:
-  NAME: "vtab-svhn"
+  NAME: "vtab-clevr(task="count_all")"
   DATAPATH: ""
   NUMBER_CLASSES: 10
   MULTILABEL: False
