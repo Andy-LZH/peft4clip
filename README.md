@@ -5,6 +5,6 @@ Visual Prompting CLIP as Fine-Tuning method, guiding CLIP to adapt to new domain
 
 #### Environment Setup 
 
-#### Register and Download new Dataset
+#### Register Dataset and Backbone
 
 #### Running
