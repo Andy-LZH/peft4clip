@@ -31,7 +31,7 @@ def main():
     parser.add_argument(
         "--data",
         type=str,
-        default="food-101",
+        default="vtab-caltech101",
         help="For Saving and loading the current Model",
     )
     parser.add_argument(
@@ -39,6 +39,13 @@ def main():
         type=bool,
         default=False,
         help="Whether to train or not",
+    )
+
+    parser.add_argument(
+        "--save_model",
+        type=bool,
+        default=False,
+        help="Whether to save the model or not",
     )
 
     args = parser.parse_args()
@@ -70,8 +77,8 @@ def main():
 
     if not args.evluate or not os.path.exists(model_path):
         # evluate the model
-        engine.train()
-        engine.evaluate()
+        engine.train(save_model=args.save_model)
+        # engine.evaluate()
 
     else:
         # evaluate the model

@@ -15,3 +15,5 @@ gdown
 tensorflow>=2.4.0
 tensorflow_datasets
 tensorflow_addons
+submitit=1.2.1
+git+https://github.com/Andy-LZH/MetaCLIP.git

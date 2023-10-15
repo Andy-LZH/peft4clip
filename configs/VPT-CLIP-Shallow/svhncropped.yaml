@@ -3,14 +3,14 @@ DATA:
   DATAPATH: ""
   NUMBER_CLASSES: 10
   MULTILABEL: False
-  CLASSESPATH: "src/data/svhn_cropped/3.0.0/classes.txt"
+  CLASSESPATH: "src/data/sun397/tfds/4.0.0/label.labels.txt"
   DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"
   PROMPT:
-    NUM_TOKENS: 50
+    NUM_TOKENS: 200
 SOLVER:
-  BASE_LR: 10.0
+  BASE_LR: 80.0
   WEIGHT_DECAY: 0.0001
   TOTAL_EPOCH: 5
   WARMUP_EPOCH: 5

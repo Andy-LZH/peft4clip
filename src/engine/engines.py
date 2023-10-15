@@ -8,6 +8,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from time import sleep
 import matplotlib.pyplot as plt
 
+
 class Engine:
     """
     Trainer class for training the model.
@@ -62,7 +63,7 @@ class Engine:
         else:
             raise ValueError("Model not supported")
 
-    def train(self):
+    def train(self, save_model: bool = False):
         """
         Train the model.
         """
@@ -150,11 +151,14 @@ class Engine:
         base_dir = "./src/logs/{}/{}/epochs{}/".format(
             self.dataset_name, self.model_name, self.max_epochs
         )
-        # save model
-        torch.save(
-            self.model.state_dict(),
-            base_dir + "model.pth".format(self.dataset_name, self.max_epochs),
-        )
+
+        if save_model:
+            # save model
+            torch.save(
+                self.model.state_dict(),
+                base_dir + "model.pth".format(self.dataset_name, self.max_epochs),
+            )
+
         # calculate training accuracy
         predicted = np.concatenate(predicted)
         labels = np.concatenate(labels)
@@ -177,7 +181,10 @@ class Engine:
             base_dir + "accuracy.png".format(self.dataset_name, self.max_epochs)
         )
 
-    def evaluate(self):
+        # run evaluation
+        self.evaluate(train_val_flag=True)
+
+    def evaluate(self, train_val_flag: bool = False):
         """
         Evaluate the model.
         """
@@ -185,25 +192,27 @@ class Engine:
         # test model
         self.model.eval()
 
-        # check if logs folder or model.path exists
-        if not os.path.exists("./src/logs"):
-            raise ValueError("No logs folder found, please train the model first")
+        if not train_val_flag:
+            # check if logs folder or model.path exists
+            if not os.path.exists("./src/logs"):
+                raise ValueError("No logs folder found, please train the model first")
 
-        if not os.path.exists(
-            "./src/logs/{}/{}/epochs{}/model.pth".format(
-                self.dataset_name, self.model_name, self.max_epochs
-            ),
-        ):
-            raise ValueError("No model found, please train the model first")
-
-        self.model.load_state_dict(
-            torch.load(
+            if not os.path.exists(
                 "./src/logs/{}/{}/epochs{}/model.pth".format(
                     self.dataset_name, self.model_name, self.max_epochs
                 ),
-                map_location=self.device,
+            ):
+                raise ValueError("No model found, please train the model first")
+
+            self.model.load_state_dict(
+                torch.load(
+                    "./src/logs/{}/{}/epochs{}/model.pth".format(
+                        self.dataset_name, self.model_name, self.max_epochs
+                    ),
+                    map_location=self.device,
+                )
             )
-        )
+
         predicted = []
         labels = []
         print("Evaluating Vision Prompt CLIP...")

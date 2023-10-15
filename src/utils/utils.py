@@ -22,6 +22,7 @@ from src.data.loader import (
 
 from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
 from src.model.CLIP.VanillaCLIP import VanillaCLIP
+import open_clip
 
 _DATASET_CONFIG = {
     "food-101": "configs/food-101.yaml",
@@ -36,6 +37,19 @@ _DATASET_CONFIG = {
     "vtab-oxford_pet": "configs/oxford_pet.yaml",
     "vtab-pcam": "configs/pcam.yaml",
     "vtab-svhncropped": "configs/svhncropped.yaml",
+    "vtab-sun397": "configs/sun397.yaml",
+    "vtab-clevr_count": "configs/clevr_count.yaml",
+    "vtab-clevr_distance": "configs/clevr_distance.yaml",
+}
+
+_BACKBONE_CONFIG = {
+    "MetaCLIP-B32-400M": "metaclip400m",
+    "MetaCLIP-B16-400M": "metaclip400m",
+    "MetaCLIP-L14-400M": "metaclip400m",
+    "MetaCLIP-B32-2.5B": "metaclip2_5b",
+    "MetaCLIP-B16-2.5B": "metaclip2_5b",
+    "MetaCLIP-L14-2.5B": "metaclip2_5b",
+    "MetaCLIP-H14-2.5B": "metaclip2_5b",
 }
 
 
@@ -69,9 +83,19 @@ def setup_model(args: argparse.Namespace) -> tuple:
             "Model not supported yet, please choose from VPT-CLIP-Shallow, VPT-CLIP-Deep, VPT-CLIP-Linear"
         )
 
-    if args.backbone not in ["ViT-B32", "ViT-B16", "ViT-L14"]:
+    if args.backbone not in [
+        "ViT-B32",
+        "ViT-B16",
+        "ViT-L14",
+        "MetaCLIP-B32-400M",
+        "MetaCLIP-B16-400M",
+        "MetaCLIP-L14-400M",
+        "MetaCLIP-B32-2.5B",
+        "MetaCLIP-B16-2.5B",
+        "MetaCLIP-L14-2.5B",
+    ]:
         raise ValueError(
-            "Model not supported yet, please choose from ViT-B32, ViT-B16, ViT-L14"
+            "Model not supported yet, please choose from ViT-B32, ViT-B16, ViT-L14, MetaCLIP-B32-400M, MetaCLIP-B16-400M, MetaCLIP-L14-400M, MetaCLIP-B32-2.5B, MetaCLIP-B16-2.5B, MetaCLIP-L14-2.5B, MetaCLIP-H14-2.5B"
         )
     # check if device is valid
     if args.device not in ["cuda", "cpu"]:
@@ -85,22 +109,32 @@ def setup_model(args: argparse.Namespace) -> tuple:
         )
 
     # set up model config
-    if args.backbone == "ViT-B32":
+    if args.backbone in ["ViT-B32", "MetaCLIP-B32-400M", "MetaCLIP-B32-2.5B"]:
         model_config = get_b32_config()
-        backbone_type = "ViT-B/32"
-    elif args.backbone == "ViT-B16":
+        open_clip_default = "ViT-B-32-quickgelu"
+        clip_default = "ViT-B/32"
+    elif args.backbone in ["ViT-B16", "MetaCLIP-B16-400M", "MetaCLIP-B16-2.5B"]:
         model_config = get_b16_config()
-        backbone_type = "ViT-B/16"
-    elif args.backbone == "ViT-L14":
+        open_clip_default = "ViT-B-16"
+        clip_default = "ViT-B/16"
+    elif args.backbone in ["ViT-L14", "MetaCLIP-L14-400M", "MetaCLIP-L14-2.5B"]:
         model_config = get_l16_config()
-        backbone_type = "ViT-L/14"
+        open_clip_default = "ViT-L-14-quickgelu"
+        clip_default = "ViT-L/14"
     else:
         raise ValueError(
             "Model not supported yet, please choose from ViT-B32, ViT-B16, ViT-L14"
         )
 
     # set up CLIP
-    model, preprocess = clip.load(backbone_type, device=args.device)
+    if args.backbone.startswith("MetaCLIP"):
+        model, _, preprocess = open_clip.create_model_and_transforms(
+            open_clip_default,
+            pretrained=_BACKBONE_CONFIG[args.backbone],
+            device=args.device,
+        )
+    else:
+        model, preprocess = clip.load(clip_default, device=args.device)
 
     # set up prompt config
     prompt_config = get_cfg().MODEL.PROMPT
@@ -112,7 +146,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
     file_location = _DATASET_CONFIG[args.data]
 
     # construct file locaation to get different yaml file for different model
-    file_location = file_location[:8] + args.model + '/' + file_location[8:]
+    file_location = file_location[:8] + args.model + "/" + file_location[8:]
     print(file_location)
     cfg.merge_from_file(file_location)
 
@@ -174,7 +208,7 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
     dataset_config : dict
         The dataset config
     """
-    
+
     text_input = torch.cat(
         [clip.tokenize(f"a photo of {c}") for c in dataset_config.DATA.CLASSES]
     ).to(args.device)
