@@ -40,6 +40,12 @@ _DATASET_CONFIG = {
     "vtab-sun397": "configs/sun397.yaml",
     "vtab-clevr_count": "configs/clevr_count.yaml",
     "vtab-clevr_distance": "configs/clevr_distance.yaml",
+    "vtab-dmlab": "configs/dmlab.yaml",
+    "vtab-kitti": "configs/kitti.yaml",
+    "vtab-smallnorb_azimuth": "configs/smallnorb_azimuth.yaml",
+    "vtab-smallnorb_elevation": "configs/smallnorb_elevation.yaml",
+    "vtab-dSprites_location": "configs/dSprites_location.yaml",
+    "vtab-dSprites_orientation": "configs/dSprites_orientation.yaml",
 }
 
 _BACKBONE_CONFIG = {

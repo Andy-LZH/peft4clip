@@ -52,5 +52,9 @@ data_dir = "."  # TODO: setup the data_dir to put the the data to, the DATA.DATA
 # dataset_builder.download_and_prepare()
 
 # sun397
-dataset_builder = tfds.builder("sun397:4.*.*", data_dir=data_dir)
+# dataset_builder = tfds.builder("sun397:4.*.*", data_dir=data_dir)
+# dataset_builder.download_and_prepare()
+
+# kitti
+dataset_builder = tfds.builder("kitti:3.*.*", data_dir=data_dir)
 dataset_builder.download_and_prepare()

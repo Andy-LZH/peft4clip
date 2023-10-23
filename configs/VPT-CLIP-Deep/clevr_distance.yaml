@@ -1,5 +1,5 @@
 DATA:
-  NAME: "vtab-clevr(task="closest_object_distance")"
+  NAME: 'vtab-clevr(task="closest_object_distance")'
   DATAPATH: ""
   NUMBER_CLASSES: 6
   MULTILABEL: False
@@ -12,6 +12,6 @@ MODEL:
 SOLVER:
   BASE_LR: 50.0
   WEIGHT_DECAY: 0.0
-  TOTAL_EPOCH: 15
+  TOTAL_EPOCH: 10
   WARMUP_EPOCH: 5
   MOMENTUM: 0.9
