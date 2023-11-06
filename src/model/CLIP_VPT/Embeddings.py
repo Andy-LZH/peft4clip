@@ -35,7 +35,6 @@ class CLIPInputEmbedding(nn.Module):
         x = self.patch_embedding(
             x
         )  # (batch_size, hidden_dim, num_patches, num_patches)
-
         # debug print
         # print("Patch Embedding: ", x.shape)
 

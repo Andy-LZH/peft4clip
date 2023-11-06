@@ -96,7 +96,7 @@ class VisionPromptCLIP(nn.Module):
         self.prompt_embed_multi_dim = self.prompt_embeddings.expand(batch_size, -1, -1)
 
         # add learnable context prompt of shape (1, num_tokens, hidden_dim)
-        # (batch_size, 1 + num_tokens + num_patches**2, hidden_dim)
+        # (batch_size, 1 + num_tokens + num_patches**2, hidden_dim))
         x = torch.cat(
             (
                 x[:, :1, :],

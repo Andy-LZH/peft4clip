@@ -93,7 +93,7 @@ class Engine:
                     loss = torch.sum(loss) / logits.shape[0]
                     assert loss.dtype == torch.float32
 
-                # # debug visualization
+                # NOTE debug visualization
                 # print(img.shape)
                 # plt.imshow(img[0].permute(1, 2, 0).cpu().numpy())
                 # plt.savefig("./src/logs/vis.png")
