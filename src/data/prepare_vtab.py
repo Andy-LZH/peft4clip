@@ -1,60 +1,48 @@
 import tensorflow_datasets as tfds
-data_dir = "."  # TODO: setup the data_dir to put the the data to, the DATA.DATAPATH value in config
+import argparse
 
-# caltech101
-# dataset_builder = tfds.builder("caltech101:3.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
+_dict = {
+    "caltech101": "caltech101:3.*.*",
+    "cifar100": "cifar100:3.*.*",
+    "clevr": "clevr:3.*.*",
+    "dmlab": "dmlab:2.0.1",
+    "dsprites": "dsprites:2.*.*",
+    "dtd": "dtd:3.*.*",
+    "eurosat": "eurosat/{}:2.*.*",
+    "oxford_flowers": "oxford_flowers102:2.*.*",
+    "oxford_pet": "oxford_iiit_pet:3.*.*",
+    "pcam": "patch_camelyon:2.*.*",
+    "smallnorb": "smallnorb:2.*.*",
+    "svhn": "svhn_cropped:3.*.*",
+    "sun397": "sun397:4.*.*",
+    "kitti": "kitti:3.*.*",
+}
 
-# cifar100
-# dataset_builder = tfds.builder("cifar100:3.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
 
-# # clevr
-# dataset_builder = tfds.builder("clevr:3.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
+class builder:
+    def __init__(self, dataset_name, data_dir):
+        self.dataset_name = dataset_name
+        self.data_dir = "."
+        self.dataset_builder = tfds.builder(dataset_name, data_dir=data_dir)
 
-# # dmlab
-# dataset_builder = tfds.builder("dmlab:2.0.1", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
+    def build(self):
+        self.dataset_builder.download_and_prepare()
 
-# # dsprites
-# dataset_builder = tfds.builder("dsprites:2.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
 
-# dtd
-# dataset_builder = tfds.builder("dtd:3.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
+# main function
+parser = argparse.ArgumentParser(description="Select Dataset to prepare")
+parser.add_argument(
+    "--dataset",
+    type=str,
+    default="caltech101",
+    help="For Saving and loading the current Model",
+)
+args = parser.parse_args()
+dataset_name = args.dataset
 
-# eurosat
-# subset="rgb"
-# dataset_name = "eurosat/{}:2.*.*".format(subset)
-# dataset_builder = tfds.builder(dataset_name, data_dir=data_dir)
-# dataset_builder.download_and_prepare()
-
-# oxford_flowers102
-# dataset_builder = tfds.builder("oxford_flowers102:2.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
-
-# oxford_iiit_pet
-# dataset_builder = tfds.builder("oxford_iiit_pet:3.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
-
-# patch_camelyon
-# dataset_builder = tfds.builder("patch_camelyon:2.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
-
-# # smallnorb
-# dataset_builder = tfds.builder("smallnorb:2.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
-
-# svhn
-# dataset_builder = tfds.builder("svhn_cropped:3.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
-
-# sun397
-# dataset_builder = tfds.builder("sun397:4.*.*", data_dir=data_dir)
-# dataset_builder.download_and_prepare()
-
-# kitti
-dataset_builder = tfds.builder("kitti:3.*.*", data_dir=data_dir)
-dataset_builder.download_and_prepare()
+if dataset_name in _dict.keys():
+    dataset_builder = builder(_dict[dataset_name], data_dir)
+    dataset_builder.build()
+else:
+    print("DATASET NOT FOUND")
+    print("Available datasets are: %s ".format(_dict.keys()))
