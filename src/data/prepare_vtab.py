@@ -41,7 +41,7 @@ args = parser.parse_args()
 dataset_name = args.dataset
 
 if dataset_name in _dict.keys():
-    dataset_builder = builder(_dict[dataset_name], data_dir)
+    dataset_builder = builder(_dict[dataset_name], ".")
     dataset_builder.build()
 else:
     print("DATASET NOT FOUND")
