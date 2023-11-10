@@ -27,6 +27,8 @@ src/data/sun397/*
 src/data/dsprites/*
 src/data/oxford_flowers102/*
 src/data/kitti/*
+src/logs/*
+wandb/*
 *model.pth
 
 # Byte-compiled / optimized / DLL files

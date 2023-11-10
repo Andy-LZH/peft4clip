@@ -8,6 +8,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from time import sleep
 import matplotlib.pyplot as plt
 from loguru import logger
+import wandb
 
 
 class Engine:
@@ -61,6 +62,8 @@ class Engine:
         torch.autograd.set_detect_anomaly(True)
         for epoch in range(self.warm_up_epochs + self.max_epochs):
             pbar = tqdm(self.train_loader)
+            epoch_loss = []
+            epoch_accuracy = []
             for img, label in pbar:
                 with autocast():
                     if self.type == "vision":
@@ -75,6 +78,7 @@ class Engine:
                     # calculate loss
                     loss = self.criterion(logits, label.to(self.device))
                     loss = torch.sum(loss) / logits.shape[0]
+                    epoch_loss.append(loss.item())
                     assert loss.dtype == torch.float32
                     # show label
                     self.optimizer.zero_grad()
@@ -87,6 +91,7 @@ class Engine:
                 labels.append(label.cpu().numpy())
 
                 accuracy = (indices == label.to(self.device)).float().mean().item()
+                epoch_accuracy.append(accuracy)
 
                 # draw loss and accuracy
                 loss_step.append(loss.item())
@@ -108,6 +113,14 @@ class Engine:
                         accuracy * 100,
                     )
                 )
+
+            # wandb log loss and accuracy in each epoch
+            wandb.log(
+                {
+                    "Loss - Epoch": np.array(epoch_loss).mean(),
+                    "Accuracy - Epoch": np.array(epoch_accuracy).mean(),
+                }
+            )
 
         # check if logs folder exists
         if not os.path.exists("./src/logs"):
@@ -219,3 +232,13 @@ class Engine:
         logger.info("Precision: {}\n".format(precision))
         logger.info("Recall: {}\n".format(recall))
         logger.info("F1: {}\n".format(f1))
+
+        # save evaluation results
+        wandb.log(
+            {
+                "Accuracy": accuracy,
+                "Precision": precision,
+                "Recall": recall,
+                "F1": f1,
+            }
+        )
