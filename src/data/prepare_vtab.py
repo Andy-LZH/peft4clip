@@ -8,7 +8,7 @@ _dict = {
     "dmlab": "dmlab:2.0.1",
     "dsprites": "dsprites:2.*.*",
     "dtd": "dtd:3.*.*",
-    "eurosat": "eurosat/{}:2.*.*",
+    "eurosat": "eurosat:2.*.*",
     "oxford_flowers": "oxford_flowers102:2.*.*",
     "oxford_pet": "oxford_iiit_pet:3.*.*",
     "pcam": "patch_camelyon:2.*.*",
