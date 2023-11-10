@@ -143,7 +143,7 @@ class VisionPromptCLIP(nn.Module):
         if self.ViT.proj is not None:
             x = x @ self.ViT.proj
 
-        return self.head(x)
+        return x
 
     def forward_deep(self, embedding_output: torch.Tensor) -> torch.Tensor:
         hidden_states = None
@@ -183,8 +183,7 @@ class VisionPromptCLIP(nn.Module):
 
         if self.ViT.proj is not None:
             hidden_states = hidden_states @ self.ViT.proj
-
-        return self.head(hidden_states)
+        return hidden_states
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -204,6 +203,35 @@ class VisionPromptCLIP(nn.Module):
         x = self.incorporate_prompt(x)
 
         if self.deep:
-            return self.forward_deep(x)
+            image_feature = self.forward_deep(x)
         else:
-            return self.forward_shallow(x)
+            image_feature = self.forward_shallow(x)
+        
+        return self.head(image_feature)
+
+    def vision_language_forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of Vision Prompt CLIP
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image tensor
+
+        Returns
+        -------
+        logits : torch.Tensor
+            Output logits tensor
+        """
+        # incorporate prompt
+        x = self.incorporate_prompt(x)
+
+        if self.deep:
+            image_feature = self.forward_deep(x)
+        else:
+            image_feature = self.forward_shallow(x)
+        
+        text_feature = self.model.encode_text(self.prompts)
+        text_feature = text_feature / text_feature.norm(dim=-1, keepdim=True)
+        logits_per_image = image_feature @ text_feature.t()
+        return logits_per_image

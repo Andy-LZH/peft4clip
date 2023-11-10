@@ -7,6 +7,7 @@ from torch.cuda.amp import autocast
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from time import sleep
 import matplotlib.pyplot as plt
+from loguru import logger
 
 
 class Engine:
@@ -30,12 +31,13 @@ class Engine:
         ## setup epochs
         self.max_epochs = configs.SOLVER.TOTAL_EPOCH
         self.warm_up_epochs = configs.SOLVER.WARMUP_EPOCH
+        self.shots = configs.DATA.SHOTS
 
-        ## setup logging
+        ## setup logger
         self.dataset_name = configs.DATA.NAME
         self.model_name = configs.MODEL.TYPE
         self.type = configs.MODEL.TRANSFER_TYPE
-        print("Model: {}".format(self.model_name))
+        logger.info("Model: {}".format(self.model_name))
 
         # setup optimizer
         self.optimizer = self.model.build_optimizer(configs)
@@ -46,15 +48,15 @@ class Engine:
         Train the model.
         """
 
-        # for logging traning loss and accuracy
+        # for logger traning loss and accuracy
         predicted = []
         labels = []
         loss_step = []
         accuracy_step = []
 
         # train the model
-        print("Training Vision Prompt CLIP...")
-        print("Press Ctrl+C to stop training")
+        logger.info("Training Vision Prompt CLIP...")
+        logger.info("Press Ctrl+C to stop training")
 
         torch.autograd.set_detect_anomaly(True)
         for epoch in range(self.warm_up_epochs + self.max_epochs):
@@ -112,25 +114,25 @@ class Engine:
             os.makedirs("./src/logs")
 
         if not os.path.exists(
-            "./src/logs/{}/{}/epochs{}/".format(
-                self.dataset_name, self.model_name, self.max_epochs
+            "./src/logs/{}/{}/shots{}/epochs{}/".format(
+                self.dataset_name, self.model_name, self.shots, self.max_epochs
             )
         ):
             os.makedirs(
-                "./src/logs/{}/{}/epochs{}/".format(
-                    self.dataset_name, self.model_name, self.max_epochs
+                "./src/logs/{}/{}/shots{}/epochs{}/".format(
+                    self.dataset_name, self.model_name, self.shots, self.max_epochs
                 )
             )
 
-        base_dir = "./src/logs/{}/{}/epochs{}/".format(
-            self.dataset_name, self.model_name, self.max_epochs
+        self.base_dir = "./src/logs/{}/{}/shots{}/epochs{}/".format(
+            self.dataset_name, self.model_name, self.shots, self.max_epochs
         )
 
         if save_model:
             # save model
             torch.save(
                 self.model.state_dict(),
-                base_dir + "model.pth".format(self.dataset_name, self.max_epochs),
+                self.base_dir + "model.pth".format(self.dataset_name, self.max_epochs),
             )
 
         # calculate training accuracy
@@ -138,21 +140,23 @@ class Engine:
         labels = np.concatenate(labels)
 
         accuracy = (predicted == labels).mean()
-        print(f"Train Accuracy = {accuracy}")
+        logger.info(f"Train Accuracy = {accuracy}")
 
         # draw loss and accuracy using matplotlib
         plt.plot(loss_step)
         plt.title("Loss")
         plt.xlabel("Step")
         plt.ylabel("Loss")
-        plt.savefig(base_dir + "loss.png".format(self.dataset_name, self.max_epochs))
+        plt.savefig(
+            self.base_dir + "loss.png".format(self.dataset_name, self.max_epochs)
+        )
 
         plt.plot(accuracy_step)
         plt.title("Accuracy")
         plt.xlabel("Step")
         plt.ylabel("Accuracy")
         plt.savefig(
-            base_dir + "accuracy.png".format(self.dataset_name, self.max_epochs)
+            self.base_dir + "accuracy.png".format(self.dataset_name, self.max_epochs)
         )
 
         # run evaluation
@@ -180,8 +184,8 @@ class Engine:
 
             self.model.load_state_dict(
                 torch.load(
-                    "./src/logs/{}/{}/epochs{}/model.pth".format(
-                        self.dataset_name, self.model_name, self.max_epochs
+                    "./src/logs/{}/{}/shots{}/epochs{}/model.pth".format(
+                        self.dataset_name, self.model_name, self.shots, self.max_epochs
                     ),
                     map_location=self.device,
                 )
@@ -189,8 +193,8 @@ class Engine:
 
         predicted = []
         labels = []
-        print("Evaluating Vision Prompt CLIP...")
-        print("Press Ctrl+C to stop evaluation")
+        logger.info("Evaluating Vision Prompt CLIP...")
+        logger.info("Press Ctrl+C to stop evaluation")
         with torch.no_grad():
             for img, label in tqdm(self.test_loader):
                 with autocast():
@@ -211,14 +215,7 @@ class Engine:
         recall = recall_score(labels, predicted, average="macro")
         f1 = f1_score(labels, predicted, average="macro")
 
-        # save results
-        with open(
-            "./src/logs/{}/{}/epochs{}/results.txt".format(
-                self.dataset_name, self.model_name, self.max_epochs
-            ),
-            "w",
-        ) as f:
-            f.write("Accuracy: {}\n".format(accuracy))
-            f.write("Precision: {}\n".format(precision))
-            f.write("Recall: {}\n".format(recall))
-            f.write("F1: {}\n".format(f1))
+        logger.info("Accuracy: {}\n".format(accuracy))
+        logger.info("Precision: {}\n".format(precision))
+        logger.info("Recall: {}\n".format(recall))
+        logger.info("F1: {}\n".format(f1))

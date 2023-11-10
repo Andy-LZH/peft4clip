@@ -1,9 +1,8 @@
 import os
 import argparse
-from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
+from loguru import logger
 from src.utils.utils import setup_model
 from src.engine.engines import Engine
-
 
 # main function to call from workflow
 def main():
@@ -41,7 +40,7 @@ def main():
         "--shots",
         type=int,
         default=8,
-        help="Specify the number of shots",
+        help="Specify the number of shots, -1 for all shots",
     )
 
     parser.add_argument(
@@ -92,12 +91,26 @@ def main():
     )
 
     # train the model
-    model_path = "./src/logs/{}/{}/{}/epochs{}/model.pth".format(
+    model_path = "./src/logs/{}/{}/epochs{}/model.pth".format(
         dataset_config.DATA.NAME,
         dataset_config.MODEL.TYPE,
-        dataset_config.MODEL.BACKBONE,
         dataset_config.SOLVER.TOTAL_EPOCH,
     )
+
+    log_dir = "./src/logs/{}/{}/shots{}/epochs{}/".format(
+        dataset_config.DATA.NAME,
+        dataset_config.MODEL.TYPE,
+        dataset_config.DATA.SHOTS,
+        dataset_config.SOLVER.TOTAL_EPOCH,
+    )
+    # print log path
+
+    # create output.log if not exists
+    if not os.path.exists(log_dir + "output.log"):
+        with open(log_dir + "output.log", "w") as f:
+            f.write("")
+
+    logger.add(log_dir + "output.log", rotation="10 MB")
 
     if not args.evluate or not os.path.exists(model_path):
         # evluate the model

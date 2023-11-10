@@ -8,6 +8,7 @@ import torch
 import torch.utils.data
 import numpy as np
 from tqdm import tqdm
+import logging
 
 from collections import Counter
 from torch import Tensor
@@ -71,6 +72,8 @@ class TFDataset(torch.utils.data.Dataset):
         self.cfg = cfg
         self._split = split
         self.name = cfg.DATA.NAME
+        logging.info("Loading {} dataset".format(self.name))
+        self.reduced_dataset = ["vtab-patch_camelyon"]
 
         self.img_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1)
         self.img_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1)
@@ -79,7 +82,10 @@ class TFDataset(torch.utils.data.Dataset):
         self._transform = transform
 
     def get_data(self, cfg, split):
-        tf_data = build_tf_dataset(cfg, split)
+        if self.name in self.reduced_dataset:
+            tf_data = build_tf_dataset(cfg, "trainval")
+        else:
+            tf_data = build_tf_dataset(cfg, split)
         # enhance speed by using prefetch
         tf_data = tf_data.prefetch(1)
 
@@ -88,13 +94,11 @@ class TFDataset(torch.utils.data.Dataset):
                 self._image_list = [Image.fromarray(data[0].numpy().squeeze())]
                 self._targets = [data[1].numpy()[0]]
             else:
-                self._image_list.append(
-                    Image.fromarray(data[0].numpy().squeeze())
-                )
+                self._image_list.append(Image.fromarray(data[0].numpy().squeeze()))
                 self._targets.append(data[1].numpy()[0])
         self._class_ids = sorted(set(self._targets))
-        print("Number of images: {}".format(len(self._image_list)))
-        print(
+        logging.info("Number of images: {}".format(len(self._image_list)))
+        logging.info(
             "Number of classes: {} / {}".format(
                 len(self._class_ids), self.get_class_num()
             )

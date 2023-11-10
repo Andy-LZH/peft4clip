@@ -171,6 +171,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
         classes = f.readlines()
     classes = [c.strip() for c in classes]
     cfg.DATA.CLASSES = classes
+    cfg.DATA.SHOTS = args.shots
     cfg.freeze()
 
     # set up dataset read from yaml file
