@@ -18,21 +18,29 @@ _DATASET_CATALOG = {
     "food-101": Food101Dataset,
 }
 
+import numpy as np
 
-def _construct_loader(cfg, split, batch_size, shuffle, drop_last, transform):
+
+def _construct_loader(
+    cfg, split, batch_size, shuffle, drop_last, transform, shots=-1, seed=0
+):
     """Constructs the data loader for the given dataset."""
     dataset_name = cfg.DATA.NAME
-        # Construct the dataset
+    # Construct the dataset
     if dataset_name.startswith("vtab-"):
         # import the tensorflow here only if needed
         from .datasets.vtab import TFDataset
+
         dataset = TFDataset(cfg, split, transform=transform)
+        print("dataset", dataset)
     else:
-        assert dataset_name in _DATASET_CATALOG.keys(), "Dataset '{}' not supported".format(
-            dataset_name
-        )
-        print("Using dataset {}".format(dataset_name))
+        assert (
+            dataset_name in _DATASET_CATALOG.keys()
+        ), "Dataset '{}' not supported".format(dataset_name)
         dataset = _DATASET_CATALOG[dataset_name](cfg, split, transform=transform)
+
+    if shots > 0 and split == "train":
+        dataset = _few_shot_sampler(dataset, shots, seed)
 
     # Create a sampler for multi-process training
     # Create a loader
@@ -46,6 +54,7 @@ def _construct_loader(cfg, split, batch_size, shuffle, drop_last, transform):
     )
     return loader
 
+
 def build_train_loader(cfg, transform=None):
     return _construct_loader(
         cfg,
@@ -56,17 +65,39 @@ def build_train_loader(cfg, transform=None):
         transform=transform,
     )
 
+
 def build_test_loader(cfg, transform=None):
     return _construct_loader(
         cfg,
         split="test",
-        batch_size=1,
+        batch_size=cfg.DATA.BATCH_SIZE,
         shuffle=False,
         drop_last=False,
         transform=transform,
     )
 
-def construct_trainval_loader(cfg, transform=None):
+
+def _few_shot_sampler(dataset, shots, seed):
+    """Sampler for few-shot dataset."""
+    # category data in each class (list of indices)
+    category_data = [[] for _ in range(dataset.get_class_num())]
+    for i, label in enumerate(dataset._targets):
+        category_data[label].append(i)
+    # check length of each class
+    # randomly sample shots from each class
+    np.random.seed(seed)
+    sample_indices = []
+    for indices in category_data:
+        # if there are not enough data in this class, sample with replacement
+        if len(indices) < shots:
+            sample_indices.extend(np.random.choice(indices, shots, replace=True))
+        else:
+            sample_indices.extend(np.random.choice(indices, shots, replace=False))
+    assert len(sample_indices) == shots * dataset.get_class_num()
+    return torch.utils.data.Subset(dataset, sample_indices)
+
+
+def construct_trainval_loader(cfg, transform=None, shots=0, seed=0):
     """Train loader wrapper."""
     if cfg.NUM_GPUS > 1:
         drop_last = True
@@ -74,9 +105,11 @@ def construct_trainval_loader(cfg, transform=None):
         drop_last = False
     return _construct_loader(
         cfg=cfg,
-        split="trainval",
+        split="train",
         batch_size=int(cfg.DATA.BATCH_SIZE / cfg.NUM_GPUS),
         shuffle=True,
         drop_last=drop_last,
         transform=transform,
+        shots=shots,
+        seed=seed,
     )

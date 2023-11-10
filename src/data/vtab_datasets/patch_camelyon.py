@@ -56,12 +56,13 @@ class PatchCamelyonData(base.ImageTfdsData):
     }
     num_samples_splits["trainval"] = (
         num_samples_splits["train"] + num_samples_splits["val"])
+    print("num_samples_splits", num_samples_splits)
     super(PatchCamelyonData, self).__init__(
         dataset_builder=dataset_builder,
         tfds_splits=tfds_splits,
         num_samples_splits=num_samples_splits,
-        num_preprocessing_threads=400,
-        shuffle_buffer_size=10000,
+        shuffle_buffer_size=100,
+        num_preprocessing_threads=16,
         # Note: Export only image and label tensors with their original types.
         base_preprocess_fn=base.make_get_tensors_fn(["image", "label"]),
         num_classes=dataset_builder.info.features["label"].num_classes)

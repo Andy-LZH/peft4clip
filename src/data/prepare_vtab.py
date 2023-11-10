@@ -2,7 +2,7 @@ import tensorflow_datasets as tfds
 import argparse
 
 _dict = {
-    "caltech101": "caltech101:3.*.*",
+    "caltech101": "caltech101:3.0.1",
     "cifar100": "cifar100:3.*.*",
     "clevr": "clevr:3.*.*",
     "dmlab": "dmlab:2.0.1",

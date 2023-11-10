@@ -160,7 +160,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
     # read classes info from url from yaml file
     classes_path = cfg.DATA.CLASSESPATH
     print(classes_path)
-    cfg.MODEL.TYPE = args.model
+    cfg.MODEL.TYPE = args.model + "-" + args.backbone + "-" + args.type
     cfg.MODEL.TRANSFER_TYPE = args.type
     cfg.MODEL.BACKBONE = args.backbone
     if not os.path.exists(classes_path):
@@ -174,8 +174,10 @@ def setup_model(args: argparse.Namespace) -> tuple:
     cfg.freeze()
 
     # set up dataset read from yaml file
-    if args.data.startswith("vtab-"):
-        train_loader = construct_trainval_loader(cfg, transform=preprocess)
+    if args.data.startswith("vtab-"): 
+        train_loader = construct_trainval_loader(
+            cfg, transform=preprocess, shots=args.shots, seed=args.seed
+        )
     else:
         train_loader = build_train_loader(cfg, transform=preprocess)
     test_loader = build_test_loader(cfg, transform=preprocess)

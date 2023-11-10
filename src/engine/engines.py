@@ -66,14 +66,14 @@ class Engine:
                         logits = self.model(img.to(self.device))
                         assert logits.dtype == torch.float16
 
-                        # calculate loss
-                        loss = self.criterion(logits, label.to(self.device))
-                        loss = torch.sum(loss) / logits.shape[0]
-                        assert loss.dtype == torch.float32
-
                     elif self.type == "vision-language":
                         logits = self.model.vision_language_forward(img.to(self.device))
                         assert logits.dtype == torch.float16
+
+                    # calculate loss
+                    loss = self.criterion(logits, label.to(self.device))
+                    loss = torch.sum(loss) / logits.shape[0]
+                    assert loss.dtype == torch.float32
                     # show label
                     self.optimizer.zero_grad()
                     loss.backward()
@@ -194,12 +194,18 @@ class Engine:
         with torch.no_grad():
             for img, label in tqdm(self.test_loader):
                 with autocast():
-                    logits = self.model(img.to(self.device))
-                    _, indices = logits.max(1)
-                    predicted.append(indices.cpu().numpy())
-                    labels.append(label.cpu().numpy())
-
+                    if self.type == "vision":
+                        # calculate logits
+                        logits = self.model(img.to(self.device))
+                    elif self.type == "vision-language":
+                        logits = self.model.vision_language_forward(img.to(self.device))
+                _, indices = logits.max(1)
+                predicted.append(indices.cpu().numpy())
+                labels.append(label.cpu().numpy())
         # calculate accuracy
+        predicted = np.concatenate(predicted)
+        labels = np.concatenate(labels)
+
         accuracy = accuracy_score(labels, predicted)
         precision = precision_score(labels, predicted, average="macro")
         recall = recall_score(labels, predicted, average="macro")

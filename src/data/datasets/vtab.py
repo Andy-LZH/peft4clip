@@ -7,11 +7,13 @@ import tensorflow.compat.v1 as tf
 import torch
 import torch.utils.data
 import numpy as np
+from tqdm import tqdm
 
 from collections import Counter
 from torch import Tensor
 
 from ..vtab_datasets import base
+
 # pylint: disable=unused-import
 from ..vtab_datasets import caltech
 from ..vtab_datasets import cifar
@@ -31,19 +33,21 @@ from ..vtab_datasets import sun397
 from ..vtab_datasets import svhn
 from ..vtab_datasets.registry import Registry
 
-tf.config.experimental.set_visible_devices([], 'GPU')  # set tensorflow to not use gpu  # noqa
+tf.config.experimental.set_visible_devices(
+    [], "GPU"
+)  # set tensorflow to not use gpu  # noqa
 DATASETS = [
-    'caltech101',
-    'cifar(num_classes=100)',
-    'dtd',
-    'oxford_flowers102',
-    'oxford_iiit_pet',
-    'patch_camelyon',
-    'sun397',
-    'svhn',
-    'resisc45',
-    'eurosat',
-    'dmlab',
+    "caltech101",
+    "cifar(num_classes=100)",
+    "dtd",
+    "oxford_flowers102",
+    "oxford_iiit_pet",
+    "patch_camelyon",
+    "sun397",
+    "svhn",
+    "resisc45",
+    "eurosat",
+    "dmlab",
     'kitti(task="closest_vehicle_distance")',
     'smallnorb(predicted_attribute="label_azimuth")',
     'smallnorb(predicted_attribute="label_elevation")',
@@ -51,7 +55,7 @@ DATASETS = [
     'dsprites(predicted_attribute="label_orientation",num_classes=16)',
     'clevr(task="closest_object_distance")',
     'clevr(task="count_all")',
-    'diabetic_retinopathy(config="btgraham-300")'
+    'diabetic_retinopathy(config="btgraham-300")',
 ]
 
 
@@ -61,10 +65,8 @@ class TFDataset(torch.utils.data.Dataset):
             "train",
             "val",
             "test",
-            "trainval"
-        }, "Split '{}' not supported for {} dataset".format(
-            split, cfg.DATA.NAME)
-
+            "trainval",
+        }, "Split '{}' not supported for {} dataset".format(split, cfg.DATA.NAME)
         self.cfg = cfg
         self._split = split
         self.name = cfg.DATA.NAME
@@ -73,20 +75,28 @@ class TFDataset(torch.utils.data.Dataset):
         self.img_std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1)
 
         self.get_data(cfg, split)
+        self._transform = transform
 
     def get_data(self, cfg, split):
         tf_data = build_tf_dataset(cfg, split)
-        data_list = list(tf_data)  # a list of tuples
+        # enhance speed by using prefetch
+        tf_data = tf_data.prefetch(1)
 
-        self._image_tensor_list = [t[0].numpy().squeeze() for t in data_list]
-        self._targets = [int(t[1].numpy()[0]) for t in data_list]
-        self._class_ids = sorted(list(set(self._targets)))
-
+        for i, data in enumerate(tqdm(tf_data, desc="Loading data", unit="batch")):
+            if i == 0:
+                self._image_tensor_list = [data[0].numpy().squeeze()]
+                self._targets = [data[1].numpy()[0]]
+            else:
+                self._image_tensor_list.append(data[0].numpy().squeeze())
+                self._targets.append(data[1].numpy()[0])
+        self._class_ids = sorted(set(self._targets))
         print("Number of images: {}".format(len(self._image_tensor_list)))
-        print("Number of classes: {} / {}".format(
-            len(self._class_ids), self.get_class_num()))
+        print(
+            "Number of classes: {} / {}".format(
+                len(self._class_ids), self.get_class_num()
+            )
+        )
 
-        del data_list
         del tf_data
 
     def get_info(self):
@@ -100,8 +110,8 @@ class TFDataset(torch.utils.data.Dataset):
         """get a list of class weight, return a list float"""
         if "train" not in self._split:
             raise ValueError(
-                "only getting training class distribution, " + \
-                "got split {} instead".format(self._split)
+                "only getting training class distribution, "
+                + "got split {} instead".format(self._split)
             )
 
         cls_num = self.get_class_num()
@@ -112,20 +122,18 @@ class TFDataset(torch.utils.data.Dataset):
         assert len(id2counts) == cls_num
         num_per_cls = np.array([id2counts[i] for i in self._class_ids])
 
-        if weight_type == 'inv':
+        if weight_type == "inv":
             mu = -1.0
-        elif weight_type == 'inv_sqrt':
+        elif weight_type == "inv_sqrt":
             mu = -0.5
-        weight_list = num_per_cls ** mu
-        weight_list = np.divide(
-            weight_list, np.linalg.norm(weight_list, 1)) * cls_num
+        weight_list = num_per_cls**mu
+        weight_list = np.divide(weight_list, np.linalg.norm(weight_list, 1)) * cls_num
         return weight_list.tolist()
 
     def __getitem__(self, index):
         # Load the image
         label = self._targets[index]
-        im = to_torch_imgs(
-            self._image_tensor_list[index], self.img_mean, self.img_std)
+        im = self._transform(self._image_tensor_list[index])
 
         if self._split == "train":
             index = index
@@ -154,8 +162,10 @@ def build_tf_dataset(cfg, mode):
     """
 
     if mode not in ["train", "val", "test", "trainval"]:
-        raise ValueError("The input pipeline supports `train`, `val`, `test`."
-                         "Provided mode is {}".format(mode))
+        raise ValueError(
+            "The input pipeline supports `train`, `val`, `test`."
+            "Provided mode is {}".format(mode)
+        )
 
     vtab_dataname = cfg.DATA.NAME.split("vtab-")[-1]
     data_dir = cfg.DATA.DATAPATH
@@ -163,34 +173,30 @@ def build_tf_dataset(cfg, mode):
         data_cls = Registry.lookup("data." + vtab_dataname)
         vtab_tf_dataloader = data_cls(data_dir=data_dir)
     else:
-        raise ValueError("Unknown type for \"dataset\" field: {}".format(
-            type(vtab_dataname)))
+        raise ValueError(
+            'Unknown type for "dataset" field: {}'.format(type(vtab_dataname))
+        )
 
     split_name_dict = {
-        "dataset_train_split_name": "train800",
+        "dataset_train_split_name": "train",
         "dataset_val_split_name": "val200",
         "dataset_trainval_split_name": "train800val200",
         "dataset_test_split_name": "test",
     }
 
     def _dict_to_tuple(batch):
-        return batch['image'], batch['label']
+        return batch["image"], batch["label"]
 
     return vtab_tf_dataloader.get_tf_data(
         batch_size=1,  # data_params["batch_size"],
         drop_remainder=False,
         split_name=split_name_dict[f"dataset_{mode}_split_name"],
-        preprocess_fn=functools.partial(
-            preprocess_fn,
-            input_range=(0.0, 1.0),
-            size=cfg.DATA.CROPSIZE,
-            ),
         for_eval=mode != "train",  # handles shuffling
         shuffle_buffer_size=1000,
         prefetch=1,
         train_examples=None,
-        epochs=1  # setting epochs to 1 make sure it returns one copy of the dataset
-    ).map(_dict_to_tuple)  # return a PrefetchDataset object. (which does not have much documentation to go on)
+        epochs=1,  # setting epochs to 1 make sure it returns one copy of the dataset
+    ).map(_dict_to_tuple)
 
 
 def to_torch_imgs(img: np.ndarray, mean: Tensor, std: Tensor) -> Tensor:

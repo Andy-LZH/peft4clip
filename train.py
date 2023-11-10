@@ -38,6 +38,20 @@ def main():
     )
 
     parser.add_argument(
+        "--shots",
+        type=int,
+        default=8,
+        help="Specify the number of shots",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Specify the seed",
+    )
+
+    parser.add_argument(
         "--device",
         type=str,
         default="cuda",

@@ -55,8 +55,7 @@ class CLIP_Adapter(nn.Module):
 
         # calculate logits via contrastive loss between prompt and image
         image_features = new_feature / new_feature.norm(dim=-1, keepdim=True)
-        text_features = self.model.encode_text(self.prompts) / self.prompts.norm(
-            dim=-1, keepdim=True
-        )
+        text_features = self.model.encode_text(self.prompts)
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
         logits_per_image = image_features @ text_features.t()
         return logits_per_image
