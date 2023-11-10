@@ -18,6 +18,7 @@ class VanillaCLIP(nn.Module):
     ):
         super().__init__()  # python3 syntax
 
+        print("Setting up CLIP Linear...")
         print("Setting up prompt configs...")
         assert prompt_config.LOCATION == "prepend"
         assert prompt_config.INITIATION == "random"
@@ -48,6 +49,14 @@ class VanillaCLIP(nn.Module):
 
         # print("Setting up prompt...")
         # print("Project: ", self.prompt_config.PROJECT)
+
+    def build_optimizer(self, configs):
+        optimizer = torch.optim.AdamW(
+            self.prompt_parameters,
+            lr=configs.SOLVER.BASE_LR,
+            weight_decay=configs.SOLVER.WEIGHT_DECAY,
+        )
+        return optimizer
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """

@@ -34,34 +34,12 @@ class Engine:
         ## setup logging
         self.dataset_name = configs.DATA.NAME
         self.model_name = configs.MODEL.TYPE
+        self.type = configs.MODEL.TRANSFER_TYPE
         print("Model: {}".format(self.model_name))
 
-        # setup model configs
-        if self.model_name in ["VPT-CLIP-Shallow", "VPT-CLIP-Deep"]:
-            self.model_name = "{}-{}".format(self.model_name, configs.MODEL.BACKBONE)
-            self.prompt_parameters = (
-                list(model.head.parameters())
-                + list(model.prompt_dropout.parameters())
-                + list(model.prompt_proj.parameters())
-            )
-
-            self.optimizer = torch.optim.SGD(
-                params=self.prompt_parameters,
-                lr=configs.SOLVER.BASE_LR,
-                weight_decay=configs.SOLVER.WEIGHT_DECAY,
-                momentum=configs.SOLVER.MOMENTUM,
-            )
-
-        elif self.model_name == "VPT-CLIP-Linear":
-            self.model_name = "{}-{}".format(self.model_name, configs.MODEL.BACKBONE)
-            self.prompt_parameters = model.head.parameters()
-            self.optimizer = torch.optim.AdamW(
-                params=self.prompt_parameters,
-                lr=configs.SOLVER.BASE_LR,
-                weight_decay=configs.SOLVER.WEIGHT_DECAY,
-            )
-        else:
-            raise ValueError("Model not supported")
+        # setup optimizer
+        self.optimizer = self.model.build_optimizer(configs)
+        self.text_encoder = self.model.model.encode_text
 
     def train(self, save_model: bool = False):
         """
@@ -82,28 +60,24 @@ class Engine:
         for epoch in range(self.warm_up_epochs + self.max_epochs):
             pbar = tqdm(self.train_loader)
             for img, label in pbar:
-                # mixed precision training
                 with autocast():
-                    # calculate logits
-                    logits = self.model(img.to(self.device))
-                    assert logits.dtype == torch.float16
+                    if self.type == "vision":
+                        # calculate logits
+                        logits = self.model(img.to(self.device))
+                        assert logits.dtype == torch.float16
 
-                    # calculate loss
-                    loss = self.criterion(logits, label.to(self.device))
-                    loss = torch.sum(loss) / logits.shape[0]
-                    assert loss.dtype == torch.float32
+                        # calculate loss
+                        loss = self.criterion(logits, label.to(self.device))
+                        loss = torch.sum(loss) / logits.shape[0]
+                        assert loss.dtype == torch.float32
 
-                # NOTE debug visualization
-                # print(img.shape)
-                # plt.imshow(img[0].permute(1, 2, 0).cpu().numpy())
-                # plt.savefig("./src/logs/vis.png")
-                # print(label[0].cpu().numpy())
-                # sleep(1)
-
-                # show label
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                    elif self.type == "vision-language":
+                        logits = self.model.vision_language_forward(img.to(self.device))
+                        assert logits.dtype == torch.float16
+                    # show label
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
 
                 # find the highest logit for each image in the batch
                 _, indices = logits.max(1)

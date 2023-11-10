@@ -22,18 +22,28 @@ def main():
         default="ViT-B16",
         help="For Saving and loading the current Model",
     )
-    parser.add_argument(
-        "--device",
-        type=str,
-        default="cuda",
-        help="For Saving and loading the current Model",
-    )
+
     parser.add_argument(
         "--data",
         type=str,
         default="vtab-caltech101",
         help="For Saving and loading the current Model",
     )
+
+    parser.add_argument(
+        "--type",
+        type=str,
+        default="vision",
+        help="Specify the type of inference, vision or vision-language",
+    )
+
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="cuda",
+        help="For Saving and loading the current Model",
+    )
+
     parser.add_argument(
         "--evluate",
         type=bool,

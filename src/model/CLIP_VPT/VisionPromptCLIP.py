@@ -86,8 +86,25 @@ class VisionPromptCLIP(nn.Module):
 
         # set embedding layer
         self.embeddings = CLIPInputEmbedding(ViT=self.ViT)
+
         # output layer
         self.head = nn.Linear(self.ViT.output_dim, num_classes)
+
+    def build_optimizer(self, configs):
+        params = (
+            list(self.head.parameters())
+            + list(self.prompt_dropout.parameters())
+            + list(self.prompt_proj.parameters())
+        )
+
+        optimizer = torch.optim.SGD(
+            params=params,
+            lr=configs.SOLVER.BASE_LR,
+            weight_decay=configs.SOLVER.WEIGHT_DECAY,
+            momentum=configs.SOLVER.MOMENTUM,
+        )
+
+        return optimizer
 
     def incorporate_prompt(self, x: torch.Tensor) -> torch.Tensor:
         batch_size = x.shape[0]

@@ -22,6 +22,7 @@ from src.data.loader import (
 
 from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
 from src.model.CLIP.VanillaCLIP import VanillaCLIP
+from src.model.CLIP_Adapter.Adapter import CLIP_Adapter
 import open_clip
 
 _DATASET_CONFIG = {
@@ -49,13 +50,13 @@ _DATASET_CONFIG = {
 }
 
 _BACKBONE_CONFIG = {
-    "MetaCLIP-B32-400M": "metaclip400m",
-    "MetaCLIP-B16-400M": "metaclip400m",
-    "MetaCLIP-L14-400M": "metaclip400m",
-    "MetaCLIP-B32-2.5B": "metaclip2_5b",
-    "MetaCLIP-B16-2.5B": "metaclip2_5b",
-    "MetaCLIP-L14-2.5B": "metaclip2_5b",
-    "MetaCLIP-H14-2.5B": "metaclip2_5b",
+    "MetaCLIP-B32-400M": "metaclip_400m",
+    "MetaCLIP-B16-400M": "metaclip_400m",
+    "MetaCLIP-L14-400M": "metaclip_400m",
+    "MetaCLIP-B32-2.5B": "metaclip_fullcc",
+    "MetaCLIP-B16-2.5B": "metaclip_fullcc",
+    "MetaCLIP-L14-2.5B": "metaclip_fullcc",
+    "MetaCLIP-H14-2.5B": "metaclip_fullcc",
 }
 
 
@@ -84,11 +85,6 @@ def setup_model(args: argparse.Namespace) -> tuple:
     """
 
     # check if model is valid
-    if args.model not in ["VPT-CLIP-Shallow", "VPT-CLIP-Deep", "VPT-CLIP-Linear"]:
-        raise ValueError(
-            "Model not supported yet, please choose from VPT-CLIP-Shallow, VPT-CLIP-Deep, VPT-CLIP-Linear"
-        )
-
     if args.backbone not in [
         "ViT-B32",
         "ViT-B16",
@@ -114,6 +110,11 @@ def setup_model(args: argparse.Namespace) -> tuple:
             ("Dataset not supported yet, please choose from ", _DATASET_CONFIG.keys())
         )
 
+    if args.type not in ["vision", "vision-language"]:
+        raise ValueError(
+            "Prompt Type not supported yet, please choose from vision, vision-language"
+        )
+
     # set up model config
     if args.backbone in ["ViT-B32", "MetaCLIP-B32-400M", "MetaCLIP-B32-2.5B"]:
         model_config = get_b32_config()
@@ -121,7 +122,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
         clip_default = "ViT-B/32"
     elif args.backbone in ["ViT-B16", "MetaCLIP-B16-400M", "MetaCLIP-B16-2.5B"]:
         model_config = get_b16_config()
-        open_clip_default = "ViT-B-16"
+        open_clip_default = "ViT-B-16-quickgelu"
         clip_default = "ViT-B/16"
     elif args.backbone in ["ViT-L14", "MetaCLIP-L14-400M", "MetaCLIP-L14-2.5B"]:
         model_config = get_l16_config()
@@ -160,6 +161,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
     classes_path = cfg.DATA.CLASSESPATH
     print(classes_path)
     cfg.MODEL.TYPE = args.model
+    cfg.MODEL.TRANSFER_TYPE = args.type
     cfg.MODEL.BACKBONE = args.backbone
     if not os.path.exists(classes_path):
         raise ValueError(
@@ -215,15 +217,39 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
         The dataset config
     """
 
-    text_input = torch.cat(
-        [clip.tokenize(f"a photo of {c}") for c in dataset_config.DATA.CLASSES]
-    ).to(args.device)
+    # setup text input template
+    _DATASET_TEMPLATE = {
+        "vtab-caltech101": "a photo of a {}",
+        "vtab-cifar100": "a photo of a {}",
+        "vtab-dtd": "a photo of a {}",
+        "vtab-eurosat": "a photo of a {}",
+        "vtab-oxford_pet": "a photo of a {}",
+        "vtab-pcam": "a photo of a {}",
+        "vtab-svhncropped": "a photo of a {}",
+        "vtab-sun397": "a photo of a {}",
+        "vtab-clevr_count": "a photo of a {}",
+        "vtab-clevr_distance": "a photo of a {}",
+        "vtab-dmlab": "a photo of a {}",
+        "vtab-kitti": "a photo of a {}",
+        "vtab-smallnorb_azimuth": "a photo of a {}",
+        "vtab-smallnorb_elevation": "a photo of a {}",
+        "vtab-dSprites_location": "a photo of a {}",
+        "vtab-dSprites_orientation": "a photo of a {}",
+    }
+
+    if args.data in _DATASET_TEMPLATE.keys():
+        text_input = torch.cat(
+            [
+                clip.tokenize(_DATASET_TEMPLATE[args.data].format(c))
+                for c in dataset_config.DATA.CLASSES
+            ]
+        ).to(args.device)
 
     img_size = dataset_config.DATA.CROPSIZE
     num_classes = dataset_config.DATA.NUMBER_CLASSES
 
-    if args.model == "VPT-CLIP-Shallow":
-        return VisionPromptCLIP(
+    _model_dict = {
+        "VPT-CLIP-Shallow": VisionPromptCLIP(
             backbone=model,
             config=model_config,
             dataset_config=dataset_config,
@@ -232,10 +258,8 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
             num_classes=num_classes,
             prompts=text_input,
             deep=False,
-        ).to(args.device)
-
-    elif args.model == "VPT-CLIP-Deep":
-        return VisionPromptCLIP(
+        ).to(args.device),
+        "VPT-CLIP-Deep": VisionPromptCLIP(
             backbone=model,
             config=model_config,
             dataset_config=dataset_config,
@@ -244,19 +268,27 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
             num_classes=num_classes,
             prompts=text_input,
             deep=True,
-        ).to(args.device)
-
-    elif args.model == "VPT-CLIP-Linear":
-        return VanillaCLIP(
+        ).to(args.device),
+        "VPT-CLIP-Linear": VanillaCLIP(
             backbone=model,
             config=model_config,
             prompt_config=prompt_config,
             img_size=img_size,
             num_classes=num_classes,
             prompts=text_input,
-        ).to(args.device)
+        ).to(args.device),
+        "CLIP-Adapter": CLIP_Adapter(
+            backbone=model,
+            config=model_config,
+            prompt_config=prompt_config,
+            prompts=text_input,
+        ).to(args.device),
+    }
+
+    if args.model in _model_dict.keys():
+        return _model_dict[args.model]
 
     else:
         raise ValueError(
-            "Model not supported yet, please choose from VPT-CLIP-Shallow, VPT-CLIP-Deep, VPT-CLIP-Linear"
+            "Model not supported yet, please choose from VPT-CLIP-Shallow, VPT-CLIP-Deep, VPT-CLIP-Linear, CLIP-Adapter"
         )
