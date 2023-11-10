@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from collections import Counter
 from torch import Tensor
+from PIL import Image
 
 from ..vtab_datasets import base
 
@@ -84,13 +85,15 @@ class TFDataset(torch.utils.data.Dataset):
 
         for i, data in enumerate(tqdm(tf_data, desc="Loading data", unit="batch")):
             if i == 0:
-                self._image_tensor_list = [data[0].numpy().squeeze()]
+                self._image_list = [Image.fromarray(data[0].numpy().squeeze())]
                 self._targets = [data[1].numpy()[0]]
             else:
-                self._image_tensor_list.append(data[0].numpy().squeeze())
+                self._image_list.append(
+                    Image.fromarray(data[0].numpy().squeeze())
+                )
                 self._targets.append(data[1].numpy()[0])
         self._class_ids = sorted(set(self._targets))
-        print("Number of images: {}".format(len(self._image_tensor_list)))
+        print("Number of images: {}".format(len(self._image_list)))
         print(
             "Number of classes: {} / {}".format(
                 len(self._class_ids), self.get_class_num()
@@ -133,7 +136,7 @@ class TFDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         # Load the image
         label = self._targets[index]
-        im = self._transform(self._image_tensor_list[index])
+        im = self._transform(self._image_list[index])
 
         if self._split == "train":
             index = index
