@@ -121,15 +121,29 @@ def main():
     logger.add(log_dir + "output.log", rotation="10 MB")
 
     if args.wandb:
+        api = wandb.Api()
+        name = "{}-{}-{}-{}-{}".format(
+            dataset_config.DATA.NAME,
+            dataset_config.MODEL.TYPE,
+            dataset_config.DATA.SHOTS,
+            dataset_config.SOLVER.TOTAL_EPOCH,
+            args.seed,
+        )
+
+        # find if the run exists
+        runs = api.runs(
+            "ifm-lab/PEFT_CLIP",
+            {"$and": [{"state": "finished"}, {"config.name": name}]},
+        )
+
+        # if the run exists, skip
+        if len(runs) > 0:
+            print("run exists for {}".format(name))
+            return
+
         wandb.init(
             project="PEFT_CLIP",
-            name="{}-{}-{}-{}-{}".format(
-                dataset_config.DATA.NAME,
-                dataset_config.MODEL.TYPE,
-                dataset_config.DATA.SHOTS,
-                dataset_config.SOLVER.TOTAL_EPOCH,
-                args.seed,
-            ),
+            name=name,
             config={
                 "model": args.model,
                 "dataset": args.data[5:],
@@ -148,7 +162,7 @@ def main():
         engine.train(save_model=args.save_model)
         # engine.evaluate()
 
-    else:
+    elif args.evluate:
         # evaluate the model
         engine.evaluate()
 
