@@ -24,6 +24,7 @@ from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
 from src.model.CLIP.VanillaCLIP import VanillaCLIP
 from src.model.CLIP_Adapter.Adapter import CLIP_Adapter
 import open_clip
+import wandb
 
 _DATASET_CONFIG = {
     "vtab-oxford_flowers": "configs/flowers.yaml",
@@ -170,8 +171,39 @@ def setup_model(args: argparse.Namespace) -> tuple:
     cfg.DATA.SHOTS = args.shots
     cfg.freeze()
 
+    api = wandb.Api()
+    name = "{}-{}-{}-{}-{}".format(
+        cfg.DATA.NAME,
+        cfg.MODEL.TYPE,
+        cfg.DATA.SHOTS,
+        cfg.SOLVER.TOTAL_EPOCH,
+        args.seed,
+    )
+
+    inference_type = "Head" if args.type == "vision" else "Contrastive Prediction"
+    # find if the run exists already meaning config is the same
+    runs = api.runs("ifm-lab/PEFT_CLIP")
+    
+    config = {
+        "model": args.model,
+        "dataset": args.data[5:],
+        "backbone": args.backbone,
+        "shots": cfg.DATA.SHOTS,
+        "epochs": cfg.SOLVER.TOTAL_EPOCH + cfg.SOLVER.WARMUP_EPOCH,
+        "lr": cfg.SOLVER.BASE_LR,
+        "type": inference_type,
+        "seed": args.seed,
+    }
+    exists_prev_runs = any(run.config == config for run in runs)
+
+    # if the run exists, skip
+    if exists_prev_runs:
+        print("run exists for {}".format(name))
+        print(len(runs))
+        raise ValueError("Run exists for {}".format(name))
+
     # set up dataset read from yaml file
-    if args.data.startswith("vtab-"): 
+    if args.data.startswith("vtab-"):
         train_loader = construct_trainval_loader(
             cfg, transform=preprocess, shots=args.shots, seed=args.seed
         )

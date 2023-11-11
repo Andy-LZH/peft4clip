@@ -121,7 +121,6 @@ def main():
     logger.add(log_dir + "output.log", rotation="10 MB")
 
     if args.wandb:
-        api = wandb.Api()
         name = "{}-{}-{}-{}-{}".format(
             dataset_config.DATA.NAME,
             dataset_config.MODEL.TYPE,
@@ -130,17 +129,8 @@ def main():
             args.seed,
         )
 
-        # find if the run exists
-        runs = api.runs(
-            "ifm-lab/PEFT_CLIP",
-            {"$and": [{"state": "finished"}, {"config.name": name}]},
-        )
-
-        # if the run exists, skip
-        if len(runs) > 0:
-            print("run exists for {}".format(name))
-            return
-
+        inference_type = "Head" if args.type == "vision" else "Contrastive Prediction"
+        
         wandb.init(
             project="PEFT_CLIP",
             name=name,
@@ -152,7 +142,7 @@ def main():
                 "epochs": dataset_config.SOLVER.TOTAL_EPOCH
                 + dataset_config.SOLVER.WARMUP_EPOCH,
                 "lr": dataset_config.SOLVER.BASE_LR,
-                "type": "Head" if args.type == "vision" else "Contrastive Prediction",
+                "type": inference_type,
                 "seed": args.seed,
             },
         )
