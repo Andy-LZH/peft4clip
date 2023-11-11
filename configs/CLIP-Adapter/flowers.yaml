@@ -3,7 +3,7 @@ DATA:
   DATAPATH: ""
   NUMBER_CLASSES: 102
   MULTILABEL: False
-  CLASSESPATH: "src/data/caltech101/3.0.1/label.labels.txt"
+  CLASSESPATH: "src/data/oxford_flowers102/2.1.1/label.labels.txt"
   DATAPATH: "src/data/"
 MODEL:
   TYPE: "CLIP-Adapter"
