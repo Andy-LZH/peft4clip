@@ -26,11 +26,7 @@ from src.model.CLIP_Adapter.Adapter import CLIP_Adapter
 import open_clip
 
 _DATASET_CONFIG = {
-    "food-101": "configs/food-101.yaml",
-    "CUB": "configs/cub.yaml",
-    "OxfordFlowers": "configs/flowers.yaml",
-    "StanfordCars": "configs/cars.yaml",
-    "StanfordDogs": "configs/dogs.yaml",
+    "vtab-oxford_flowers": "configs/flowers.yaml",
     "vtab-caltech101": "configs/caltech101.yaml",
     "vtab-cifar100": "configs/cifar100.yaml",
     "vtab-dtd": "configs/dtd.yaml",
@@ -222,6 +218,7 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
 
     # setup text input template
     _DATASET_TEMPLATE = {
+        "vtab-oxford_flowers": "a photo of a {}",
         "vtab-caltech101": "a photo of a {}",
         "vtab-cifar100": "a photo of a {}",
         "vtab-dtd": "a photo of a {}",
