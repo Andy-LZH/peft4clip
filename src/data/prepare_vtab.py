@@ -45,4 +45,4 @@ if dataset_name in _dict.keys():
     dataset_builder.build()
 else:
     print("DATASET NOT FOUND")
-    print("Available datasets are: %s ".format(_dict.keys()))
+    print("Available datasets are: {}".format(_dict.keys()))
