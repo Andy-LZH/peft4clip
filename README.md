@@ -23,8 +23,7 @@ pip install wandb
 wandb login
 ```
 
-#### Dataset and Backbone
-Avaliable datasets to be registered:
+#### Datasets and Backbones
 | Dataset | # Classes | Prompts | Note
 | :---: | :---: | :--- | :--- |
 | vtab-caltech101 | 101 | [Link](/src/data/prompt.md) | |
