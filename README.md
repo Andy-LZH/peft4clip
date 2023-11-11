@@ -45,7 +45,7 @@ Avaliable datasets to be registered:
 ```bash
 # download dataset (pwd: src/data)
 cd src/data
-python prepare_vtab.py --data <Dataset>
+python prepare_vtab.py --data "<Dataset>"
 
 # i.e download caltech101 dataset
 python prepare_vtab.py --data caltech101
@@ -53,5 +53,5 @@ python prepare_vtab.py --data caltech101
 
 #### Running
 ```bash
-python train.py --data <dataset_name> --backbone <backbone_name> --model <strategy_name> --type <inferece_type> --shots <num_shots> --seeds <seed>
+python train.py --data "<dataset_name>" --backbone "<backbone_name>" --model "<strategy_name>" --type "<inferece_type>" --shots "<num_shots>" --seeds "<seed>"
 ```
