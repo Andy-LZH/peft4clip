@@ -36,7 +36,8 @@ _C.MODEL.SAVE_CKPT = False
 
 _C.MODEL.MODEL_ROOT = ""  # root folder for pretrained model weights
 
-_C.MODEL.TYPE = "vit"
+_C.MODEL.TYPE = "VPT-CLIP-Shallow"
+_C.MODEL.BACKBONE = "ViT-B16"
 _C.MODEL.MLP_NUM = 0
 
 _C.MODEL.LINEAR = CfgNode()
@@ -102,7 +103,7 @@ _C.SOLVER.BIAS_MULTIPLIER = 1.              # for prompt + bias
 
 _C.SOLVER.WARMUP_EPOCH = 5
 _C.SOLVER.TOTAL_EPOCH = 30
-_C.SOLVER.LOG_EVERY_N = 1000
+_C.SOLVER.LOG_EVERY_N = 100
 
 
 _C.SOLVER.DBG_TRAINABLE = False # if True, will print the name of trainable params
@@ -121,6 +122,7 @@ _C.DATA.NUMBER_CLASSES = -1
 _C.DATA.MULTILABEL = False
 _C.DATA.CLASS_WEIGHTS_TYPE = "none"
 _C.DATA.CLASSESPATH = ""
+_C.DATA.SHOTS = -1
 
 _C.DATA.CROPSIZE = 224  # or 384
 

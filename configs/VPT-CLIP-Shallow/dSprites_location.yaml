@@ -1,0 +1,16 @@
+DATA:
+  NAME: 'vtab-dsprites(predicted_attribute="label_x_position",num_classes=16)'
+  NUMBER_CLASSES: 16
+  MULTILABEL: False
+  CLASSESPATH: "src/data/svhn_cropped/3.0.0/classes.txt"
+  DATAPATH: "src/data/"
+MODEL:
+  TYPE: "vit"
+  PROMPT:
+    NUM_TOKENS: 50
+SOLVER:
+  BASE_LR: 5.0
+  WEIGHT_DECAY: 0.0001
+  TOTAL_EPOCH: 15
+  WARMUP_EPOCH: 5
+  MOMENTUM: 0.9

@@ -1,9 +1,9 @@
-import clip
-import torch
+import os
 import argparse
-from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
-from src.utils.utils import setup_clip
+from loguru import logger
+from src.utils.utils import setup_model
 from src.engine.engines import Engine
+import wandb
 
 
 # main function to call from workflow
@@ -14,27 +14,51 @@ def main():
     parser.add_argument(
         "--model",
         type=str,
-        default="ViT-B/32",
+        default="VPT-CLIP-Shallow",
         help="For Saving and loading the current Model",
     )
+    parser.add_argument(
+        "--backbone",
+        type=str,
+        default="ViT-B16",
+        help="For Saving and loading the current Model",
+    )
+
+    parser.add_argument(
+        "--data",
+        type=str,
+        default="vtab-caltech101",
+        help="For Saving and loading the current Model",
+    )
+
+    parser.add_argument(
+        "--type",
+        type=str,
+        default="vision",
+        help="Specify the type of inference, vision or vision-language",
+    )
+
+    parser.add_argument(
+        "--shots",
+        type=int,
+        default=8,
+        help="Specify the number of shots, -1 for all shots",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Specify the seed",
+    )
+
     parser.add_argument(
         "--device",
         type=str,
         default="cuda",
         help="For Saving and loading the current Model",
     )
-    parser.add_argument(
-        "--data",
-        type=str,
-        default="food-101",
-        help="For Saving and loading the current Model",
-    )
-    parser.add_argument(
-        "--deep",
-        type=bool,
-        default=False,
-        help="Whether to use deep prompt or not",
-    )
+
     parser.add_argument(
         "--evluate",
         type=bool,
@@ -42,37 +66,22 @@ def main():
         help="Whether to train or not",
     )
 
+    parser.add_argument(
+        "--save_model",
+        type=bool,
+        default=False,
+        help="Whether to save the model or not",
+    )
+
     args = parser.parse_args()
     print(args)
     # set up cfg and args
     (
-        backbone,
-        config,
-        prompt_config,
+        model,
         train_loader,
         test_loader,
         dataset_config,
-    ) = setup_clip(args)
-
-    print(dataset_config)
-
-    # construct text input
-    text_input = torch.cat(
-        [clip.tokenize(f"a photo of {c}") for c in dataset_config.DATA.CLASSES]
-    ).to(args.device)
-
-    # define data loaders
-    img_size = dataset_config.DATA.CROPSIZE
-    num_classes = dataset_config.DATA.NUMBER_CLASSES
-
-    model = VisionPromptCLIP(
-        backbone=backbone,
-        config=config,
-        prompt_config=prompt_config,
-        img_size=img_size,
-        num_classes=num_classes,
-        prompts=text_input,
-    ).to(args.device)
+    ) = setup_model(args)
 
     # setup engine
     engine = Engine(
@@ -83,12 +92,57 @@ def main():
         configs=dataset_config,
     )
 
-    if not args.evluate:
-        # evluate the model
-        engine.train()
+    # train the model
+    model_path = "./src/logs/{}/{}/epochs{}/model.pth".format(
+        dataset_config.DATA.NAME,
+        dataset_config.MODEL.TYPE,
+        dataset_config.SOLVER.TOTAL_EPOCH,
+    )
 
-    # evaluate the model
-    engine.evaluate()
+    log_dir = "./src/logs/{}/{}/shots{}/epochs{}/".format(
+        dataset_config.DATA.NAME,
+        dataset_config.MODEL.TYPE,
+        dataset_config.DATA.SHOTS,
+        dataset_config.SOLVER.TOTAL_EPOCH,
+    )
+    # print log path
+
+    # check if directory exists
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    logger.add(log_dir + "output.log", rotation="10 MB")
+
+    wandb.init(
+        project="PEFT_CLIP",
+        name="{}-{}-{}-{}-{}".format(
+            dataset_config.DATA.NAME,
+            dataset_config.MODEL.TYPE,
+            dataset_config.DATA.SHOTS,
+            dataset_config.SOLVER.TOTAL_EPOCH,
+            args.seed,
+        ),
+        config={
+            "model": args.model,
+            "dataset": args.data[5:],
+            "backbone": args.backbone,
+            "shots": dataset_config.DATA.SHOTS,
+            "epochs": dataset_config.SOLVER.TOTAL_EPOCH
+            + dataset_config.SOLVER.WARMUP_EPOCH,
+            "lr": dataset_config.SOLVER.BASE_LR,
+            "type": "Head" if args.type == "vision" else "Contrastive Prediction",
+            "seed": args.seed,
+        },
+    )
+
+    if not args.evluate or not os.path.exists(model_path):
+        # evluate the model
+        engine.train(save_model=args.save_model)
+        # engine.evaluate()
+
+    else:
+        # evaluate the model
+        engine.evaluate()
 
 
 if __name__ == "__main__":

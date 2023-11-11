@@ -9,10 +9,30 @@ src/data/stanfordcars
 src/data/stanford-dogs
 src/data/food-101
 src/data/CUB_200_2011
-src/logs/StanfordCars/epochs0/model.pth
+src/data/nabirds
+src/data/oxford-flowers
+src/data/caltech101
+src/data/cifar100
+src/data/clevr
+src/data/dmlab/*
+src/data/dtd/*
+stc/data/eurosat/*
+src/data/eurosat/.config
+src/data/eurosat/rgb
+src/data/oxford_iiit_pet/*
+src/data/patch_camelyon/*
+src/data/svhn_cropped/*
+src/data/smallnorb/*
+src/data/sun397/*
+src/data/dsprites/*
+src/data/oxford_flowers102/*
+src/data/kitti/*
+src/logs/*
+wandb/*
+*model.pth
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__/
 *.py[cod]
 *$py.class
 
