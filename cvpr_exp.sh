@@ -30,14 +30,106 @@ do
     # python3 train.py --data "vtab-caltech101" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type
     # python3 train.py --data "vtab-caltech101" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type
 
-    # patch_camelyon
-    python3 train.py --data "vtab-patch_camelyon" --model "CLIP-Adapter" --backbone "ViT-B32" --shots $num_shot
-    python3 train.py --data "vtab-patch_camelyon" --model "CLIP-Adapter" --backbone "ViT-B16" --shots $num_shot
-    python3 train.py --data "vtab-patch_camelyon" --model "CLIP-Adapter" --backbone "ViT-L14" --shots $num_shot
-    python3 train.py --data "vtab-patch_camelyon" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-400M" --shots $num_shot
-    python3 train.py --data "vtab-patch_camelyon" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot
-    python3 train.py --data "vtab-patch_camelyon" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-400M" --shots $num_shot
-    python3 train.py --data "vtab-patch_camelyon" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot
+    # vtab-pcam
+    # python3 train.py --data "vtab-pcam" --model "CLIP-Adapter" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-pcam" --model "CLIP-Adapter" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-pcam" --model "CLIP-Adapter" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-pcam" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-pcam" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-pcam" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-pcam" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Shallow" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Shallow" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Shallow" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Deep" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Deep" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Deep" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-pcam" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    # kitti
+    # python3 train.py --data "vtab-kitti" --model "CLIP-Adapter" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-kitti" --model "CLIP-Adapter" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-kitti" --model "CLIP-Adapter" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-kitti" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-kitti" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-kitti" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-kitti" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Shallow" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Shallow" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Shallow" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Deep" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Deep" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Deep" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-kitti" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+
+    # svhncropped
+    # python3 train.py --data "vtab-svhncropped" --model "CLIP-Adapter" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-svhncropped" --model "CLIP-Adapter" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-svhncropped" --model "CLIP-Adapter" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-svhncropped" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-svhncropped" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-svhncropped" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-svhncropped" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Shallow" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Shallow" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Shallow" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Deep" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Deep" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Deep" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-svhncropped" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    # Oxford_Pets
+    # python3 train.py --data "vtab-oxford_pet" --model "CLIP-Adapter" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-oxford_pet" --model "CLIP-Adapter" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-oxford_pet" --model "CLIP-Adapter" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-oxford_pet" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-oxford_pet" --model "CLIP-Adapter" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-oxford_pet" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    # python3 train.py --data "vtab-oxford_pet" --model "CLIP-Adapter" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Shallow" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Shallow" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Shallow" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Shallow" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
+
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Deep" --backbone "ViT-B32" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Deep" --backbone "ViT-B16" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Deep" --backbone "ViT-L14" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B32-2.5B" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-400M" --shots $num_shot --type $type --wandb True
+    python3 train.py --data "vtab-oxford_pet" --model "VPT-CLIP-Deep" --backbone "MetaCLIP-B16-2.5B" --shots $num_shot --type $type --wandb True
     done
 
 done
