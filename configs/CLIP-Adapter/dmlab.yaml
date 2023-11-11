@@ -1,0 +1,16 @@
+DATA:
+  NAME: 'vtab-dmlab'
+  NUMBER_CLASSES: 6
+  MULTILABEL: False
+  CLASSESPATH: "src/data/svhn_cropped/3.0.0/classes.txt"
+  DATAPATH: "src/data/"
+MODEL:
+  TYPE: "vit"
+  PROMPT:
+    NUM_TOKENS: 200
+SOLVER:
+  BASE_LR: 0.001
+  WEIGHT_DECAY: 0.0001
+  TOTAL_EPOCH: 15
+  WARMUP_EPOCH: 5
+  MOMENTUM: 0.9

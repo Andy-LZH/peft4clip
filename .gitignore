@@ -195,4 +195,5 @@ cython_debug/
 # VSCode
 .vscode/
 
-
+# shell script
+cvpr_exp.sh
