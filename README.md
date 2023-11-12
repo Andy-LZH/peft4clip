@@ -24,7 +24,7 @@ wandb login
 ```
 
 #### Datasets and Backbones
-| Dataset | meta | Note
+| Dataset | Prompt | Note
 | :---: | :--- | :--- |
 | vtab-caltech101 |[Link](/src/data/prompt.md)| |
 | vtab-cifar100 |[Link](/src/data/prompt.md)| |
