@@ -1,4 +1,4 @@
-# Prompts for VTab-1K
+# Prompts for VTAB-1k
 
 Follow what CLIP did in their repo, we as well share some of our manually crafted prompt and motivations here.
 
