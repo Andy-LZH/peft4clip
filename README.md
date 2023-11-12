@@ -24,22 +24,22 @@ wandb login
 ```
 
 #### Datasets and Backbones
-| Dataset | Prompts | Note
+| Dataset | meta | Note
 | :---: | :--- | :--- |
-| vtab-caltech101 | [Link](/src/data/prompt.md)| |
-| vtab-cifar100 | [Link](/src/data/prompt.md)| |
-| vtab-clevr | [Link](/src/data/prompt.md) | Use **vtab-clevr_count** or **vtab-clevr_distance** in <dataset_name> |
-| vtba-dmlab | [Link](/src/data/prompt.md#vtab-dmlab)| |
-| vtab-dsprites | [Link](/src/data/prompt.md)| Use **vtab-dSprites_location** or **vtab-dSprites_orientation** in <dataset_name> |
-| vtba-dtd | [Link](/src/data/prompt.md)| |
-| vtab-eurosat | [Link](/src/data/prompt.md)| |
-| vtab-oxford_flowers | [Link](/src/data/prompt.md)| |
+| vtab-caltech101 |[Link](/src/data/prompt.md)| |
+| vtab-cifar100 |[Link](/src/data/prompt.md)| |
+| vtab-clevr |[Link](/src/data/prompt.md) | **vtab-clevr_count** or **vtab-clevr_distance**|
+| vtba-dmlab |[Link](/src/data/prompt.md#vtab-dmlab)| |
+| vtab-dsprites |[Link](/src/data/prompt.md)| **vtab-dSprites_location** or **vtab-dSprites_orientation**|
+| vtba-dtd |[Link](/src/data/prompt.md)| |
+| vtab-eurosat |[Link](/src/data/prompt.md)| |
+| vtab-oxford_flowers |[Link](/src/data/prompt.md)| |
 | vtab-oxford_pet |[Link](/src/data/prompt.md)| |
-| vtba-pcam | [Link](/src/data/prompt.md#vtab-pcam)| Tensorflow dataset sometime broken, submit issue when encountered |
-| vtab-smallnorb | [Link](/src/data/prompt.md)| Use **vtab-smallnorb_azimuth** or **vtab-smallnorb_elevation** in <dataset_name> |
-| vtab-svhn | [Link](/src/data/prompt.md)| |
-| vtab-sun397 | [Link](/src/data/prompt.md)| Tensorflow dataset sometime broken, submit issue when encountered |
-| vtab-kitti | [Link](/src/data/prompt.md#vtab-kitti)| |
+| vtba-pcam |[Link](/src/data/prompt.md#vtab-pcam)|*|
+| vtab-smallnorb |[Link](/src/data/prompt.md)| **vtab-smallnorb_azimuth** or **vtab-smallnorb_elevation**|
+| vtab-svhn |[Link](/src/data/prompt.md)| |
+| vtab-sun397 |[Link](/src/data/prompt.md)|*|
+| vtab-kitti |[Link](/src/data/prompt.md#vtab-kitti)| |
 
 ```bash
 # download dataset (pwd: src/data)
