@@ -23,24 +23,23 @@ pip install wandb
 wandb login
 ```
 
-#### Register Dataset and Backbone
-Avaliable datasets to be registered:
-| Dataset | # Classes 
-| :---: | :---: |
-| caltech101 | 101 |
-| cifar100 | 100 |
-| clevr | TODO |
-| dmlab | TODO |
-| dsprites | TODO |
-| dtd | TODO |
-| eurosat | TODO |
-| oxford_flowers | TODO |
-| oxford_pet | TODO |
-| pcam | TODO |
-| smallnorb | TODO |
-| svhn | TODO |
-| sun397 | TODO |
-| kitti | TODO |
+#### Datasets and Backbones
+| Dataset | Prompt | Note
+| :---: | :--- | :--- |
+| vtab-caltech101 |[Link](/src/data/prompt.md)| |
+| vtab-cifar100 |[Link](/src/data/prompt.md)| |
+| vtab-clevr |[Link](/src/data/prompt.md) | **vtab-clevr_count** or **vtab-clevr_distance**|
+| vtba-dmlab |[Link](/src/data/prompt.md#vtab-dmlab)| |
+| vtab-dsprites |[Link](/src/data/prompt.md)| **vtab-dSprites_location** or **vtab-dSprites_orientation**|
+| vtba-dtd |[Link](/src/data/prompt.md)| |
+| vtab-eurosat |[Link](/src/data/prompt.md)| |
+| vtab-oxford_flowers |[Link](/src/data/prompt.md)| |
+| vtab-oxford_pet |[Link](/src/data/prompt.md)| |
+| vtba-pcam |[Link](/src/data/prompt.md#vtab-pcam)|*|
+| vtab-smallnorb |[Link](/src/data/prompt.md)| **vtab-smallnorb_azimuth** or **vtab-smallnorb_elevation**|
+| vtab-svhn |[Link](/src/data/prompt.md)| |
+| vtab-sun397 |[Link](/src/data/prompt.md)|*|
+| vtab-kitti |[Link](/src/data/prompt.md#vtab-kitti)| |
 
 ```bash
 # download dataset (pwd: src/data)

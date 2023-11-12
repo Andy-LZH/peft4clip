@@ -24,13 +24,10 @@ from src.model.CLIP_VPT.VisionPromptCLIP import VisionPromptCLIP
 from src.model.CLIP.VanillaCLIP import VanillaCLIP
 from src.model.CLIP_Adapter.Adapter import CLIP_Adapter
 import open_clip
+import wandb
 
 _DATASET_CONFIG = {
-    "food-101": "configs/food-101.yaml",
-    "CUB": "configs/cub.yaml",
-    "OxfordFlowers": "configs/flowers.yaml",
-    "StanfordCars": "configs/cars.yaml",
-    "StanfordDogs": "configs/dogs.yaml",
+    "vtab-oxford_flowers": "configs/flowers.yaml",
     "vtab-caltech101": "configs/caltech101.yaml",
     "vtab-cifar100": "configs/cifar100.yaml",
     "vtab-dtd": "configs/dtd.yaml",
@@ -174,8 +171,39 @@ def setup_model(args: argparse.Namespace) -> tuple:
     cfg.DATA.SHOTS = args.shots
     cfg.freeze()
 
+    api = wandb.Api()
+    name = "{}-{}-{}-{}-{}".format(
+        cfg.DATA.NAME,
+        cfg.MODEL.TYPE,
+        cfg.DATA.SHOTS,
+        cfg.SOLVER.TOTAL_EPOCH,
+        args.seed,
+    )
+
+    inference_type = "Head" if args.type == "vision" else "Contrastive Prediction"
+    # find if the run exists already meaning config is the same
+    runs = api.runs("ifm-lab/PEFT_CLIP")
+    
+    config = {
+        "model": args.model,
+        "dataset": args.data[5:],
+        "backbone": args.backbone,
+        "shots": cfg.DATA.SHOTS,
+        "epochs": cfg.SOLVER.TOTAL_EPOCH + cfg.SOLVER.WARMUP_EPOCH,
+        "lr": cfg.SOLVER.BASE_LR,
+        "type": inference_type,
+        "seed": args.seed,
+    }
+    exists_prev_runs = any(run.config == config for run in runs)
+
+    # if the run exists, skip
+    if exists_prev_runs:
+        print("run exists for {}".format(name))
+        print(len(runs))
+        raise ValueError("Run exists for {}".format(name))
+
     # set up dataset read from yaml file
-    if args.data.startswith("vtab-"): 
+    if args.data.startswith("vtab-"):
         train_loader = construct_trainval_loader(
             cfg, transform=preprocess, shots=args.shots, seed=args.seed
         )
@@ -222,18 +250,19 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
 
     # setup text input template
     _DATASET_TEMPLATE = {
+        "vtab-oxford_flowers": "a photo of a {}",
         "vtab-caltech101": "a photo of a {}",
         "vtab-cifar100": "a photo of a {}",
         "vtab-dtd": "a photo of a {}",
         "vtab-eurosat": "a photo of a {}",
         "vtab-oxford_pet": "a photo of a {}",
         "vtab-pcam": "a photo of a {}",
-        "vtab-svhncropped": "a photo of a {}",
+        "vtab-svhncropped": "a photo of a digital number {}",
         "vtab-sun397": "a photo of a {}",
         "vtab-clevr_count": "a photo of a {}",
         "vtab-clevr_distance": "a photo of a {}",
         "vtab-dmlab": "a photo of a {}",
-        "vtab-kitti": "a photo of a {}",
+        "vtab-kitti": "a photo with {}",
         "vtab-smallnorb_azimuth": "a photo of a {}",
         "vtab-smallnorb_elevation": "a photo of a {}",
         "vtab-dSprites_location": "a photo of a {}",

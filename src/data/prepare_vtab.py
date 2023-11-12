@@ -2,22 +2,21 @@ import tensorflow_datasets as tfds
 import argparse
 
 _dict = {
-    "caltech101": "caltech101:3.0.1",
-    "cifar100": "cifar100:3.*.*",
-    "clevr": "clevr:3.*.*",
-    "dmlab": "dmlab:2.0.1",
-    "dsprites": "dsprites:2.*.*",
-    "dtd": "dtd:3.*.*",
-    "eurosat": "eurosat:2.*.*",
-    "oxford_flowers": "oxford_flowers102:2.*.*",
-    "oxford_pet": "oxford_iiit_pet:3.*.*",
-    "pcam": "patch_camelyon:2.*.*",
-    "smallnorb": "smallnorb:2.*.*",
-    "svhn": "svhn_cropped:3.*.*",
-    "sun397": "sun397:4.*.*",
-    "kitti": "kitti:3.*.*",
+    "vtab-caltech101": "caltech101:3.0.1",
+    "vtab-cifar100": "cifar100:3.*.*",
+    "vtab-clevr": "clevr:3.*.*",
+    "vtab-dmlab": "dmlab:2.0.1",
+    "vtab-dsprites": "dsprites:2.*.*",
+    "vtab-dtd": "dtd:3.*.*",
+    "vtab-eurosat": "eurosat:2.*.*",
+    "vtab-oxford_flowers": "oxford_flowers102:2.*.*",
+    "vtab-oxford_pet": "oxford_iiit_pet:3.*.*",
+    "vtab-pcam": "patch_camelyon:2.*.*",
+    "vtab-smallnorb": "smallnorb:2.*.*",
+    "vtab-svhn": "svhn_cropped:3.*.*",
+    "vtab-sun397": "sun397:4.*.*",
+    "vtab-kitti": "kitti:3.*.*",
 }
-
 
 class builder:
     def __init__(self, dataset_name, data_dir):
@@ -45,4 +44,4 @@ if dataset_name in _dict.keys():
     dataset_builder.build()
 else:
     print("DATASET NOT FOUND")
-    print("Available datasets are: %s ".format(_dict.keys()))
+    print("Available datasets are: {}".format(_dict.keys()))

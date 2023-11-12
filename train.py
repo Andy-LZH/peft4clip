@@ -73,6 +73,13 @@ def main():
         help="Whether to save the model or not",
     )
 
+    parser.add_argument(
+        "--wandb",
+        type=bool,
+        default=False,
+        help="Whether to save the model or not",
+    )
+
     args = parser.parse_args()
     print(args)
     # set up cfg and args
@@ -113,34 +120,39 @@ def main():
 
     logger.add(log_dir + "output.log", rotation="10 MB")
 
-    wandb.init(
-        project="PEFT_CLIP",
-        name="{}-{}-{}-{}-{}".format(
+    if args.wandb:
+        name = "{}-{}-{}-{}-{}".format(
             dataset_config.DATA.NAME,
             dataset_config.MODEL.TYPE,
             dataset_config.DATA.SHOTS,
             dataset_config.SOLVER.TOTAL_EPOCH,
             args.seed,
-        ),
-        config={
-            "model": args.model,
-            "dataset": args.data[5:],
-            "backbone": args.backbone,
-            "shots": dataset_config.DATA.SHOTS,
-            "epochs": dataset_config.SOLVER.TOTAL_EPOCH
-            + dataset_config.SOLVER.WARMUP_EPOCH,
-            "lr": dataset_config.SOLVER.BASE_LR,
-            "type": "Head" if args.type == "vision" else "Contrastive Prediction",
-            "seed": args.seed,
-        },
-    )
+        )
+
+        inference_type = "Head" if args.type == "vision" else "Contrastive Prediction"
+        
+        wandb.init(
+            project="PEFT_CLIP",
+            name=name,
+            config={
+                "model": args.model,
+                "dataset": args.data[5:],
+                "backbone": args.backbone,
+                "shots": dataset_config.DATA.SHOTS,
+                "epochs": dataset_config.SOLVER.TOTAL_EPOCH
+                + dataset_config.SOLVER.WARMUP_EPOCH,
+                "lr": dataset_config.SOLVER.BASE_LR,
+                "type": inference_type,
+                "seed": args.seed,
+            },
+        )
 
     if not args.evluate or not os.path.exists(model_path):
         # evluate the model
         engine.train(save_model=args.save_model)
         # engine.evaluate()
 
-    else:
+    elif args.evluate:
         # evaluate the model
         engine.evaluate()
 

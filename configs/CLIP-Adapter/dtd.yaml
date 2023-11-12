@@ -1,17 +1,17 @@
 DATA:
-  NAME: "vtab-patch_camelyon"
+  NAME: "vtab-dtd"
   DATAPATH: ""
-  NUMBER_CLASSES: 2
+  NUMBER_CLASSES: 47
   MULTILABEL: False
-  CLASSESPATH: "src/data/patch_camelyon/2.0.0/classes.txt"
+  CLASSESPATH: "src/data/dtd/3.0.1/label.labels.txt"
   DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"
   PROMPT:
-    NUM_TOKENS: 100
+    NUM_TOKENS: 10
 SOLVER:
   BASE_LR: 0.001
   WEIGHT_DECAY: 0.0001
-  TOTAL_EPOCH: 50
+  TOTAL_EPOCH: 10
   WARMUP_EPOCH: 5
   MOMENTUM: 0.9
