@@ -28,15 +28,15 @@ wandb login
 | :---: | :--- | :--- |
 | vtab-caltech101 |[Link](/src/data/prompt.md)| |
 | vtab-cifar100 |[Link](/src/data/prompt.md)| |
-| vtab-clevr |[Link](/src/data/prompt.md) | **vtab-clevr_count** or **vtab-clevr_distance**|
+| vtab-clevr |[Link](/src/data/prompt.md) | vtab-clevr_count, vtab-clevr_distance|
 | vtba-dmlab |[Link](/src/data/prompt.md#vtab-dmlab)| |
-| vtab-dsprites |[Link](/src/data/prompt.md)| **vtab-dSprites_location** or **vtab-dSprites_orientation**|
+| vtab-dsprites |[Link](/src/data/prompt.md)| vtab-dSprites_location, vtab-dSprites_orientation|
 | vtba-dtd |[Link](/src/data/prompt.md)| |
 | vtab-eurosat |[Link](/src/data/prompt.md)| |
 | vtab-oxford_flowers |[Link](/src/data/prompt.md)| |
 | vtab-oxford_pet |[Link](/src/data/prompt.md)| |
 | vtba-pcam |[Link](/src/data/prompt.md#vtab-pcam)|*|
-| vtab-smallnorb |[Link](/src/data/prompt.md)| **vtab-smallnorb_azimuth** or **vtab-smallnorb_elevation**|
+| vtab-smallnorb |[Link](/src/data/prompt.md)| vtab-smallnorb_azimuth, vtab-smallnorb_elevation|
 | vtab-svhn |[Link](/src/data/prompt.md)| |
 | vtab-sun397 |[Link](/src/data/prompt.md)|*|
 | vtab-kitti |[Link](/src/data/prompt.md#vtab-kitti)| |
@@ -44,7 +44,7 @@ wandb login
 ```bash
 # download dataset (pwd: src/data)
 cd src/data
-python prepare_vtab.py --data <Dataset>
+python prepare_vtab.py --data "<Dataset>"
 
 # i.e download caltech101 dataset
 python prepare_vtab.py --data caltech101
@@ -52,5 +52,5 @@ python prepare_vtab.py --data caltech101
 
 #### Running
 ```bash
-python train.py --data <dataset_name> --backbone <backbone_name> --model <strategy_name> --type <inferece_type> --shots <num_shots> --seeds <seed>
+python train.py --data "<dataset_name>" --backbone "<backbone_name>" --model "<strategy_name>" --type "<inferece_type>" --shots "<num_shots>" --seeds "<seed>"
 ```
