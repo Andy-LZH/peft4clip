@@ -9,6 +9,8 @@ from .datasets.datasets import (
     Food101Dataset,
 )
 
+from torchvision.datasets import SUN397
+
 _DATASET_CATALOG = {
     "CUB": CUB200Dataset,
     "OxfordFlowers": FlowersDataset,
@@ -16,6 +18,7 @@ _DATASET_CATALOG = {
     "StanfordDogs": DogsDataset,
     "nabirds": NabirdsDataset,
     "food-101": Food101Dataset,
+    "vtab-sun397": SUN397,
 }
 
 import numpy as np
@@ -31,8 +34,11 @@ def _construct_loader(
         # import the tensorflow here only if needed
         from .datasets.vtab import TFDataset
 
-        dataset = TFDataset(cfg, split, transform=transform)
-        print("dataset", dataset)
+        if dataset_name not in ["vtab-sun397"]:
+            dataset = TFDataset(cfg, split, transform=transform)
+        
+        dataset = _DATASET_CATALOG[dataset_name](root=cfg.DATA.DATAPATH, split=split, transform=transform)
+
     else:
         assert (
             dataset_name in _DATASET_CATALOG.keys()

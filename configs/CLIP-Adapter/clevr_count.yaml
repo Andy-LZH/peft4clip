@@ -1,9 +1,8 @@
 DATA:
-  NAME: "vtab-sun397"
-  DATAPATH: ""
-  NUMBER_CLASSES: 397
+  NAME: 'vtab-clevr(task="count_all")'
+  NUMBER_CLASSES: 8
   MULTILABEL: False
-  CLASSESPATH: "src/data/datasets/prompts/sun397/classes.txt"
+  CLASSESPATH: "src/data/svhn_cropped/3.0.0/classes.txt"
   DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"
@@ -12,6 +11,6 @@ MODEL:
 SOLVER:
   BASE_LR: 0.001
   WEIGHT_DECAY: 0.0001
-  TOTAL_EPOCH: 5
+  TOTAL_EPOCH: 20
   WARMUP_EPOCH: 5
   MOMENTUM: 0.9
