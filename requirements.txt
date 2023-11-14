@@ -19,3 +19,4 @@ submitit==1.2.1
 torch==2.0.1
 git+https://github.com/openai/CLIP.git
 git+https://github.com/facebookresearch/MetaCLIP.git
+loralib
