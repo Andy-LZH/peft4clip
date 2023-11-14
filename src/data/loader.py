@@ -36,8 +36,8 @@ def _construct_loader(
 
         if dataset_name not in ["vtab-sun397"]:
             dataset = TFDataset(cfg, split, transform=transform)
-        
-        dataset = _DATASET_CATALOG[dataset_name](root=cfg.DATA.DATAPATH, split=split, transform=transform)
+        else:
+            dataset = _DATASET_CATALOG[dataset_name](root=cfg.DATA.DATAPATH, split=split, transform=transform)
 
     else:
         assert (

@@ -44,6 +44,7 @@ _DATASET_CONFIG = {
     "vtab-smallnorb_elevation": "configs/smallnorb_elevation.yaml",
     "vtab-dSprites_location": "configs/dSprites_location.yaml",
     "vtab-dSprites_orientation": "configs/dSprites_orientation.yaml",
+    "vtab-resisc45": "configs/resisc45.yaml",
 }
 
 _BACKBONE_CONFIG = {
@@ -183,7 +184,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
     inference_type = "Head" if args.type == "vision" else "Contrastive Prediction"
     # find if the run exists already meaning config is the same
     runs = api.runs("ifm-lab/PEFT_CLIP")
-    
+
     config = {
         "model": args.model,
         "dataset": args.data[5:],
@@ -267,6 +268,7 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
         "vtab-smallnorb_elevation": "a photo of a {}",
         "vtab-dSprites_location": "a photo of a {}",
         "vtab-dSprites_orientation": "a photo of a {}",
+        "vtab-resisc45": "satellite imagery of {}",
     }
 
     if args.data in _DATASET_TEMPLATE.keys():
