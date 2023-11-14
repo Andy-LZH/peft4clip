@@ -27,8 +27,7 @@ src/data/sun397/*
 src/data/dsprites/*
 src/data/oxford_flowers102/*
 src/data/kitti/*
-src/data/downloads/manual/*
-src/data/resisc45/*
+src/data/SUN397/*
 src/logs/*
 wandb/*
 *model.pth
@@ -198,3 +197,7 @@ cython_debug/
 .vscode/
 
 *.sh
+src/data/diabetic-retinopathy-detection.zip
+src/data/prepare.ipynb
+src/data/SUN397.tar.gz
+tmp.ipynb

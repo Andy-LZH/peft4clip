@@ -1,5 +1,6 @@
 import tensorflow_datasets as tfds
 import argparse
+from torchvision.datasets import SUN397
 
 _dict = {
     "vtab-caltech101": "caltech101:3.0.1",
@@ -14,8 +15,11 @@ _dict = {
     "vtab-pcam": "patch_camelyon:2.*.*",
     "vtab-smallnorb": "smallnorb:2.*.*",
     "vtab-svhn": "svhn_cropped:3.*.*",
-    "vtab-sun397": "sun397:4.*.*",
     "vtab-kitti": "kitti:3.*.*",
+}
+
+_external_pytorch = {
+    "vtab-sun397": SUN397,
 }
 
 class builder:
@@ -43,5 +47,8 @@ if dataset_name in _dict.keys():
     dataset_builder = builder(_dict[dataset_name], ".")
     dataset_builder.build()
 else:
+    if dataset_name in _external_pytorch.keys():
+        print("Downloading {} using pytorch dataset".format(dataset_name))
+        dataset = _external_pytorch[dataset_name](".", download=True)
     print("DATASET NOT FOUND")
     print("Available datasets are: {}".format(_dict.keys()))

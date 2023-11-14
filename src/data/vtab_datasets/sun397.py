@@ -40,7 +40,7 @@ class Sun397Data(base.ImageTfdsData):
       dataset_builder.download_and_prepare()
 
       tfds_splits = {
-          "train": "train",
+          "train": "train[:55900]",
           "val": "validation",
           "test": "test",
           "trainval": "train+validation",

@@ -1,4 +1,5 @@
 import torch
+from tqdm import tqdm
 
 from .datasets.datasets import (
     CUB200Dataset,
@@ -31,22 +32,35 @@ def _construct_loader(
     dataset_name = cfg.DATA.NAME
     # Construct the dataset
     if dataset_name.startswith("vtab-"):
-        # import the tensorflow here only if needed
-        from .datasets.vtab import TFDataset
-
         if dataset_name not in ["vtab-sun397"]:
+            from .datasets.vtab import TFDataset
             dataset = TFDataset(cfg, split, transform=transform)
-        else:
-            dataset = _DATASET_CATALOG[dataset_name](root=cfg.DATA.DATAPATH, split=split, transform=transform)
 
+            if shots > 0 and split == "train":
+                dataset = _few_shot_sampler(dataset, shots, seed)
+        else:
+
+            sun397_dataset = _DATASET_CATALOG[dataset_name](root=cfg.DATA.DATAPATH, transform=transform)
+
+            # split the dataset into train and test randomly with 80% and 20% respectively use np.random.seed(0)
+            np.random.seed(seed)
+            indices = np.random.permutation(len(sun397_dataset))
+            train_indices = indices[:int(0.8 * len(indices))]
+            test_indices = indices[int(0.8 * len(indices)):]
+            labels = np.array(sun397_dataset._labels)
+            train_dataset = labels[train_indices]
+            test_dataset = torch.utils.data.Subset(sun397_dataset, test_indices)
+            if split == "train":
+                dataset = train_dataset
+                if shots > 0:
+                    dataset = _few_shot_sampler(sun397_dataset, shots, seed, classes=cfg.DATA.CLASSES, targets=train_dataset)
+            elif split == "test":
+                dataset = test_dataset
     else:
         assert (
             dataset_name in _DATASET_CATALOG.keys()
         ), "Dataset '{}' not supported".format(dataset_name)
         dataset = _DATASET_CATALOG[dataset_name](cfg, split, transform=transform)
-
-    if shots > 0 and split == "train":
-        dataset = _few_shot_sampler(dataset, shots, seed)
 
     # Create a sampler for multi-process training
     # Create a loader
@@ -83,12 +97,20 @@ def build_test_loader(cfg, transform=None):
     )
 
 
-def _few_shot_sampler(dataset, shots, seed):
+def _few_shot_sampler(dataset, shots, seed, classes=None, targets=None):
     """Sampler for few-shot dataset."""
     # category data in each class (list of indices)
-    category_data = [[] for _ in range(dataset.get_class_num())]
-    for i, label in enumerate(dataset._targets):
-        category_data[label].append(i)
+    if classes is not None and targets is not None:
+        category_data = [[] for _ in range(len(classes))]
+        for i, label in tqdm(enumerate(targets), total=len(dataset), desc="few-shot sampler"):
+            category_data[label].append(i)
+        class_length = len(classes)
+    else:
+        category_data = [[] for _ in range(dataset.get_class_num())]
+        for i, label in tqdm(enumerate(dataset._targets), total=len(dataset), desc="few-shot sampler"):
+            category_data[label].append(i)
+        class_length = dataset.get_class_num()
+    
     # check length of each class
     # randomly sample shots from each class
     np.random.seed(seed)
@@ -99,7 +121,7 @@ def _few_shot_sampler(dataset, shots, seed):
             sample_indices.extend(np.random.choice(indices, shots, replace=True))
         else:
             sample_indices.extend(np.random.choice(indices, shots, replace=False))
-    assert len(sample_indices) == shots * dataset.get_class_num()
+    assert len(sample_indices) == shots * class_length
     return torch.utils.data.Subset(dataset, sample_indices)
 
 
