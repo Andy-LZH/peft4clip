@@ -24,6 +24,7 @@ wandb login
 ```
 
 #### Datasets and Backbones
+See [prompt.md](src/data/prompt.md) for full prompt catelogs
 | Dataset | Prompt | Note
 | :---: | :--- | :--- |
 | vtab-caltech101 |[Link](/src/data/prompt.md)| |
