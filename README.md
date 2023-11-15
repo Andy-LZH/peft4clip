@@ -8,7 +8,7 @@ A systematic study of parameter efficient fine-tuning for CLIP, including the fo
 - [ ] **Backbone**
 
 
-#### Environment Setup 
+### Environment Setup 
 All the code is tested on **python 3.9+**, **CUDA 11.7/12.0**
 ```bash
 # create a new conda environment
@@ -24,7 +24,7 @@ pip install wandb
 wandb login
 ```
 
-#### Supported Tasks(Dataset) and Backbone
+### Supported Tasks(Dataset) and Backbone
 See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) for prepare and learn the dataset
 | Task | Backbone
 | :---: |  :---: |
@@ -47,7 +47,7 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 | vtab-smallnorb_azimuth |
 | vtab-smallnorb_azimuth |
 
-#### Supported Strategy
+### Supported Strategy
 | Model |
 | :---: |
 | [CLIP-Adapter]() |
@@ -57,7 +57,7 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 | [LoRA] |
 | Continued |
 
-#### Running
+### Running
 ```bash
 python train.py \
       --data "<dataset_name>" \     # Specify the dataset(task) name from table in Supported Tasks
