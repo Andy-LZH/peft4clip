@@ -54,6 +54,7 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 | [CoOP]() |
 | [VPT-CLIP-Shallow]() |
 | [VPT-CLIP-Deep] |
+| [LoRA] |
 | Continued |
 
 #### Running
