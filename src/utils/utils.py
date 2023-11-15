@@ -266,8 +266,8 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
         "vtab-kitti": "a photo with {}",
         "vtab-smallnorb_azimuth": "the camera azimuth is {} degrees",
         "vtab-smallnorb_elevation": "the camera elevation is {} degrees",
-        "vtab-dSprites_location": "a photo of a {}",
-        "vtab-dSprites_orientation": "a photo of a {}",
+        "vtab-dSprites_location": "the shape is located at x_position {}",
+        "vtab-dSprites_orientation": "the shape oriented at {}",
         "vtab-resisc45": "satellite imagery of {}",
     }
 
