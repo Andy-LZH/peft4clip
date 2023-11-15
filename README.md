@@ -24,6 +24,7 @@ pip install wandb
 wandb login
 ```
 
+
 ### Supported Tasks(Dataset) and Backbone
 See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) for prepare and learn the dataset
 | Task | Backbone
@@ -59,6 +60,7 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 
 ### Running
 ```bash
+
 python train.py \
       --data "<dataset_name>" \     # Specify the dataset(task) name from table in Supported Tasks
       --backbone "<backbone_name>" \ # Choose the backbone architecture from table in Supported backbone
@@ -66,5 +68,6 @@ python train.py \
       --type "<inference_type>" \   # Set the inference type
       --shots "<num_shots>" \       # Indicate the number of shots
       --seeds "<seed>"              # Provide the seed value for reproducibility
+
 ```
 
