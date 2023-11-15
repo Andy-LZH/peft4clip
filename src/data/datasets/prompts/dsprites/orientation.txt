@@ -1,0 +1,16 @@
+0 degrees
+24 degrees
+48 degrees
+72 degrees
+96 degrees
+120 degrees
+144 degrees
+168 degrees
+192 degrees
+216 degrees
+240 degrees
+264 degrees
+288 degrees
+312 degrees
+336 degrees
+360 degrees

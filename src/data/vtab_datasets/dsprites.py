@@ -60,6 +60,7 @@ class DSpritesData(base.ImageTfdsData):
     # at the desired number of classes. This is useful for example for grouping
     # together different spatial positions.
     num_original_classes = info.features[predicted_attribute].num_classes
+    print(info.features['value_orientation'])
     if num_classes is None:
       num_classes = num_original_classes
     if not isinstance(num_classes, int) or num_classes <= 1 or (
@@ -84,7 +85,7 @@ class DSpritesData(base.ImageTfdsData):
 
     # Defines dataset specific train/val/trainval/test splits.
     tfds_splits = {
-        "train": "train[:{}]".format(num_samples_splits["train"]),
+        "train": "train[:{}]".format(5000),
         "val": "train[{}:{}]".format(num_samples_splits["train"],
                                      num_samples_splits["trainval"]),
         "trainval": "train[:{}]".format(num_samples_splits["trainval"]),

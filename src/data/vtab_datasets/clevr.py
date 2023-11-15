@@ -23,6 +23,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow.compat.v1 as tf
 import tensorflow_datasets as tfds
+from time import sleep
 
 from . import base as base
 from .registry import Registry
@@ -102,7 +103,7 @@ class CLEVRData(base.ImageTfdsData):
 
     # Defines dataset specific train/val/trainval/test splits.
     tfds_splits = {
-        "train": "train[:{}]".format(num_samples_splits["train"]),
+        "train": "train[:{}]".format(5000),
         "val": "train[{}:]".format(num_samples_splits["train"]),
         "trainval": "train",
         "test": "validation",

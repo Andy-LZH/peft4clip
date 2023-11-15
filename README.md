@@ -1,19 +1,20 @@
 # Parameter Efficient Fine-Tuning for CLIP
 
 A systematic study of parameter efficient fine-tuning for CLIP, including the following aspects:
-- [x] **Dataset**: [Vtab-1k](https://google-research.github.io/task_adaptation/)
+- [x] **Dataset**: [VTAB-1k](https://google-research.github.io/task_adaptation/)
 
 - [ ] **Fine-tuning Strategy**
 
 - [ ] **Backbone**
 
 
-#### Environment Setup 
+### Environment Setup 
 All the code is tested on **python 3.9+**, **CUDA 11.7/12.0**
 ```bash
 # create a new conda environment
 conda create -n peft_clip python=3.9
 conda activate peft_clip
+
 pip install -r requirements.txt
 ```
 
@@ -23,34 +24,50 @@ pip install wandb
 wandb login
 ```
 
-#### Datasets and Backbones
-| Dataset | Prompt | Note
-| :---: | :--- | :--- |
-| vtab-caltech101 |[Link](/src/data/prompt.md)| |
-| vtab-cifar100 |[Link](/src/data/prompt.md)| |
-| vtab-clevr |[Link](/src/data/prompt.md) | vtab-clevr_count, vtab-clevr_distance|
-| vtba-dmlab |[Link](/src/data/prompt.md#vtab-dmlab)| |
-| vtab-dsprites |[Link](/src/data/prompt.md)| vtab-dSprites_location, vtab-dSprites_orientation|
-| vtba-dtd |[Link](/src/data/prompt.md)| |
-| vtab-eurosat |[Link](/src/data/prompt.md)| |
-| vtab-oxford_flowers |[Link](/src/data/prompt.md)| |
-| vtab-oxford_pet |[Link](/src/data/prompt.md)| |
-| vtba-pcam |[Link](/src/data/prompt.md#vtab-pcam)|*|
-| vtab-smallnorb |[Link](/src/data/prompt.md)| vtab-smallnorb_azimuth, vtab-smallnorb_elevation|
-| vtab-svhn |[Link](/src/data/prompt.md)| |
-| vtab-sun397 |[Link](/src/data/prompt.md)|*|
-| vtab-kitti |[Link](/src/data/prompt.md#vtab-kitti)| |
 
+### Supported Tasks(Dataset) and Backbone
+See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) for prepare and learn the dataset
+| Task | Backbone
+| :---: |  :---: |
+| vtab-caltech101 | ViT-B32 |
+| vtab-cifar100 | ViT-B16 |
+| vtba-dtd | ViT-L14 |
+| vtab-oxford_flowers | MetaCLIP-B32-400m |
+| vtab-oxford_pet | MetaCLIP-B32-2.5B |
+| vtab-svhn | MetaCLIP-B16-400M |
+| vtab-sun397 | MetaCLIP-B16-2.5B |
+| vtba-pcam |
+| vtab-eurosat |
+| vtab-resisc45 |
+| vtab-clevr_count |
+| vtab-clevr_distance |
+| vtba-dmlab |
+| vtab-kitti |
+| vtab-dSprites_location |
+| vtab-dSprites_orientation |
+| vtab-smallnorb_azimuth |
+| vtab-smallnorb_azimuth |
+
+### Supported Strategy
+| Model |
+| :---: |
+| [CLIP-Adapter]() |
+| [CoOP]() |
+| [VPT-CLIP-Shallow]() |
+| [VPT-CLIP-Deep] |
+| [LoRA] |
+| Continued |
+
+### Running
 ```bash
-# download dataset (pwd: src/data)
-cd src/data
-python prepare_vtab.py --data "<Dataset>"
 
-# i.e download caltech101 dataset
-python prepare_vtab.py --data caltech101
+python train.py \
+      --data "<dataset_name>" \     # Specify the dataset(task) name from table in Supported Tasks
+      --backbone "<backbone_name>" \ # Choose the backbone architecture from table in Supported backbone
+      --model "<strategy_name>" \   # Define the strategy model from table in 
+      --type "<inference_type>" \   # Set the inference type
+      --shots "<num_shots>" \       # Indicate the number of shots
+      --seeds "<seed>"              # Provide the seed value for reproducibility
+
 ```
 
-#### Running
-```bash
-python train.py --data "<dataset_name>" --backbone "<backbone_name>" --model "<strategy_name>" --type "<inferece_type>" --shots "<num_shots>" --seeds "<seed>"
-```

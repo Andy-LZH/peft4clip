@@ -44,6 +44,7 @@ _DATASET_CONFIG = {
     "vtab-smallnorb_elevation": "configs/smallnorb_elevation.yaml",
     "vtab-dSprites_location": "configs/dSprites_location.yaml",
     "vtab-dSprites_orientation": "configs/dSprites_orientation.yaml",
+    "vtab-resisc45": "configs/resisc45.yaml",
 }
 
 _BACKBONE_CONFIG = {
@@ -183,7 +184,7 @@ def setup_model(args: argparse.Namespace) -> tuple:
     inference_type = "Head" if args.type == "vision" else "Contrastive Prediction"
     # find if the run exists already meaning config is the same
     runs = api.runs("ifm-lab/PEFT_CLIP")
-    
+
     config = {
         "model": args.model,
         "dataset": args.data[5:],
@@ -259,14 +260,15 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
         "vtab-pcam": "a photo of a {}",
         "vtab-svhncropped": "a photo of a digital number {}",
         "vtab-sun397": "a photo of a {}",
-        "vtab-clevr_count": "a photo of a {}",
-        "vtab-clevr_distance": "a photo of a {}",
+        "vtab-clevr_count": "there are {} objects in the image",
+        "vtab-clevr_distance": "the closest object is {} away from the camera",
         "vtab-dmlab": "a photo of a {}",
         "vtab-kitti": "a photo with {}",
-        "vtab-smallnorb_azimuth": "a photo of a {}",
-        "vtab-smallnorb_elevation": "a photo of a {}",
-        "vtab-dSprites_location": "a photo of a {}",
-        "vtab-dSprites_orientation": "a photo of a {}",
+        "vtab-smallnorb_azimuth": "the camera azimuth is {} degrees",
+        "vtab-smallnorb_elevation": "the camera elevation is {} degrees",
+        "vtab-dSprites_location": "the shape is located at x_position {}",
+        "vtab-dSprites_orientation": "the shape oriented at {}",
+        "vtab-resisc45": "satellite imagery of {}",
     }
 
     if args.data in _DATASET_TEMPLATE.keys():

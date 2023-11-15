@@ -75,8 +75,9 @@ class Engine:
                         logits = self.model.vision_language_forward(img.to(self.device))
                         assert logits.dtype == torch.float16
 
+                    print("type of label", label.dtype)
                     # calculate loss
-                    loss = self.criterion(logits, label.to(self.device))
+                    loss = self.criterion(logits, label.to(self.device, dtype=torch.long))
                     loss = torch.sum(loss) / logits.shape[0]
                     epoch_loss.append(loss.item())
                     assert loss.dtype == torch.float32
