@@ -1,7 +1,7 @@
 # Parameter Efficient Fine-Tuning for CLIP
 
 A systematic study of parameter efficient fine-tuning for CLIP, including the following aspects:
-- [x] **Dataset**: [Vtab-1k](https://google-research.github.io/task_adaptation/)
+- [x] **Dataset**: [VTAB-1k](https://google-research.github.io/task_adaptation/)
 
 - [ ] **Fine-tuning Strategy**
 
