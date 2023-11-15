@@ -103,7 +103,7 @@ class CLEVRData(base.ImageTfdsData):
 
     # Defines dataset specific train/val/trainval/test splits.
     tfds_splits = {
-        "train": "train[:{}]".format(num_samples_splits["train"]),
+        "train": "train[:{}]".format(5000),
         "val": "train[{}:]".format(num_samples_splits["train"]),
         "trainval": "train",
         "test": "validation",
