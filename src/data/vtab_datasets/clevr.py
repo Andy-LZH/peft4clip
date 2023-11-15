@@ -23,6 +23,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow.compat.v1 as tf
 import tensorflow_datasets as tfds
+from time import sleep
 
 from . import base as base
 from .registry import Registry
