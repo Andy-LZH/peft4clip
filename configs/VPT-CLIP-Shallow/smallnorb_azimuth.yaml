@@ -2,7 +2,7 @@ DATA:
   NAME: 'vtab-smallnorb(predicted_attribute="label_azimuth")'
   NUMBER_CLASSES: 18
   MULTILABEL: False
-  CLASSESPATH: "src/data/svhn_cropped/3.0.0/classes.txt"
+  CLASSESPATH: "src/data/datasets/prompts/smallnorb/azimuth.txt"
   DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"
