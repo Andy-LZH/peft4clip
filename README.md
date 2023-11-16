@@ -1,6 +1,9 @@
 # Parameter Efficient Fine-Tuning for CLIP
 
 A systematic study of parameter efficient fine-tuning for CLIP, including the following aspects:
+![peftclip_figure](https://github.com/Andy-LZH/peft4clip/assets/40489953/8ae5e6a6-d700-4fa4-971e-55560988e92a)
+
+
 - [x] **Dataset**: [VTAB-1k](https://google-research.github.io/task_adaptation/)
 
 - [ ] **Fine-tuning Strategy**
