@@ -46,7 +46,7 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 | vtab-dSprites_location |
 | vtab-dSprites_orientation |
 | vtab-smallnorb_azimuth |
-| vtab-smallnorb_azimuth |
+| vtab-smallnorb_distance |
 
 ### Supported Strategy
 | Model |
