@@ -1,6 +1,6 @@
 # Parameter Efficient Fine-Tuning for CLIP
 
-An emprical study of parameter efficient fine-tuning four CLIP:
+An emprical study of parameter efficient fine-tuning for CLIP:
 ![peftclip_figure](https://github.com/Andy-LZH/peft4clip/assets/40489953/8ae5e6a6-d700-4fa4-971e-55560988e92a)
 
 
