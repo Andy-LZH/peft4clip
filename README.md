@@ -62,7 +62,7 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 python train.py \
       --data "<dataset_name>" \     # Specify the dataset(task) name from table in Supported Tasks
       --backbone "<backbone_name>" \ # Choose the backbone architecture from table in Supported backbone
-      --model "<strategy_name>" \   # Define the strategy model from table in 
+      --model "<strategy_name>" \   # Define the strategy model from table in Supported Strategy
       --type "<inference_type>" \   # Set the inference type to either "vision" or "vision-language"
       --shots "<num_shots>" \       # Indicate the number of shots
       --seeds "<seed>"              # Provide the seed value for reproducibility
