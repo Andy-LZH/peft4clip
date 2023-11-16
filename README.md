@@ -51,23 +51,20 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 ### Supported Strategy
 | Model |
 | :---: |
-| [CLIP-Adapter]() |
-| [CoOP]() |
-| [VPT-CLIP-Shallow]() |
-| [VPT-CLIP-Deep] |
-| [LoRA] |
+| [CLIP-Adapter](https://github.com/gaopengcuhk/CLIP-Adapter) |
+| [CoOP](https://github.com/KaiyangZhou/CoOp) |
+| [VPT-CLIP-Shallow](https://github.com/KMnP/vpt) |
+| [VPT-CLIP-Deep](https://github.com/KMnP/vpt)|
 | Continued |
 
 ### Running
 ```bash
-
 python train.py \
       --data "<dataset_name>" \     # Specify the dataset(task) name from table in Supported Tasks
       --backbone "<backbone_name>" \ # Choose the backbone architecture from table in Supported backbone
       --model "<strategy_name>" \   # Define the strategy model from table in 
-      --type "<inference_type>" \   # Set the inference type
+      --type "<inference_type>" \   # Set the inference type to either "vision" or "vision-language"
       --shots "<num_shots>" \       # Indicate the number of shots
       --seeds "<seed>"              # Provide the seed value for reproducibility
-
 ```
 
