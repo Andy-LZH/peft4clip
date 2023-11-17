@@ -34,7 +34,7 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 | vtba-dtd | ViT-L14 |
 | vtab-oxford_flowers | MetaCLIP-B32-400m |
 | vtab-oxford_pet | MetaCLIP-B32-2.5B |
-| vtab-svhn | MetaCLIP-B16-400M |
+| vtab-svhncropped | MetaCLIP-B16-400M |
 | vtab-sun397 | MetaCLIP-B16-2.5B |
 | vtba-pcam |
 | vtab-eurosat |
