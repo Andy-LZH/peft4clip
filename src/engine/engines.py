@@ -75,7 +75,6 @@ class Engine:
                         logits = self.model.vision_language_forward(img.to(self.device))
                         assert logits.dtype == torch.float16
 
-                    print("type of label", label.dtype)
                     # calculate loss
                     loss = self.criterion(logits, label.to(self.device, dtype=torch.long))
                     loss = torch.sum(loss) / logits.shape[0]
@@ -176,7 +175,7 @@ class Engine:
         # run evaluation
         self.evaluate(train_val_flag=True)
 
-    def evaluate(self, train_val_flag: bool = False):
+    def evaluate(self, train_val_flag: bool = False, shots: int = 1):
         """
         Evaluate the model.
         """
@@ -184,26 +183,27 @@ class Engine:
         # test model
         self.model.eval()
 
-        if not train_val_flag:
-            # check if logs folder or model.path exists
-            if not os.path.exists("./src/logs"):
-                raise ValueError("No logs folder found, please train the model first")
+        if shots != 0:
+            if not train_val_flag:
+                # check if logs folder or model.path exists
+                if not os.path.exists("./src/logs"):
+                    raise ValueError("No logs folder found, please train the model first")
 
-            if not os.path.exists(
-                "./src/logs/{}/{}/epochs{}/model.pth".format(
-                    self.dataset_name, self.model_name, self.max_epochs
-                ),
-            ):
-                raise ValueError("No model found, please train the model first")
-
-            self.model.load_state_dict(
-                torch.load(
-                    "./src/logs/{}/{}/shots{}/epochs{}/model.pth".format(
-                        self.dataset_name, self.model_name, self.shots, self.max_epochs
+                if not os.path.exists(
+                    "./src/logs/{}/{}/epochs{}/model.pth".format(
+                        self.dataset_name, self.model_name, self.max_epochs
                     ),
-                    map_location=self.device,
+                ):
+                    raise ValueError("No model found, please train the model first")
+
+                self.model.load_state_dict(
+                    torch.load(
+                        "./src/logs/{}/{}/shots{}/epochs{}/model.pth".format(
+                            self.dataset_name, self.model_name, self.shots, self.max_epochs
+                        ),
+                        map_location=self.device,
+                    )
                 )
-            )
 
         predicted = []
         labels = []

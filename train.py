@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import argparse
 from loguru import logger
@@ -20,7 +22,7 @@ def main():
     parser.add_argument(
         "--backbone",
         type=str,
-        default="ViT-B16",
+        default="MetaCLIP-B16-2.5B",
         help="For Saving and loading the current Model",
     )
 
@@ -34,7 +36,7 @@ def main():
     parser.add_argument(
         "--type",
         type=str,
-        default="vision",
+        default="vision-language",
         help="Specify the type of inference, vision or vision-language",
     )
 
@@ -43,6 +45,27 @@ def main():
         type=int,
         default=8,
         help="Specify the number of shots, -1 for all shots",
+    )
+
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=5,
+        help="Specify the number of epochs",
+    )
+
+    parser.add_argument(
+        "--lr",
+        type=float,
+        default=0.0001,
+        help="Specify the learning rate",
+    )
+
+    parser.add_argument(
+        "--warmup",
+        type=int,
+        default=5,
+        help="Specify the warmup epoch size",
     )
 
     parser.add_argument(
@@ -130,7 +153,7 @@ def main():
         )
 
         inference_type = "Head" if args.type == "vision" else "Contrastive Prediction"
-        
+
         wandb.init(
             project="PEFT_CLIP",
             name=name,
@@ -147,14 +170,14 @@ def main():
             },
         )
 
-    if not args.evluate or not os.path.exists(model_path):
+    if not args.evluate:
         # evluate the model
         engine.train(save_model=args.save_model)
         # engine.evaluate()
 
     elif args.evluate:
         # evaluate the model
-        engine.evaluate()
+        engine.evaluate(shots=args.shots)
 
 
 if __name__ == "__main__":

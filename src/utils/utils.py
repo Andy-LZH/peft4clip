@@ -45,6 +45,7 @@ _DATASET_CONFIG = {
     "vtab-dSprites_location": "configs/dSprites_location.yaml",
     "vtab-dSprites_orientation": "configs/dSprites_orientation.yaml",
     "vtab-resisc45": "configs/resisc45.yaml",
+    "vtab-diabetic_retinopathy": "configs/diabetic_retinopathy.yaml",
 }
 
 _BACKBONE_CONFIG = {
@@ -170,6 +171,9 @@ def setup_model(args: argparse.Namespace) -> tuple:
     classes = [c.strip() for c in classes]
     cfg.DATA.CLASSES = classes
     cfg.DATA.SHOTS = args.shots
+    cfg.SOLVER.TOTAL_EPOCH = args.epochs
+    cfg.SOLVER.BASE_LR = args.lr
+    cfg.SOLVER.WARMUP_EPOCH = args.warmup
     cfg.freeze()
 
     api = wandb.Api()

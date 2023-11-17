@@ -51,12 +51,7 @@ class VanillaCLIP(nn.Module):
         # print("Project: ", self.prompt_config.PROJECT)
 
     def build_optimizer(self, configs):
-        optimizer = torch.optim.AdamW(
-            self.prompt_parameters,
-            lr=configs.SOLVER.BASE_LR,
-            weight_decay=configs.SOLVER.WEIGHT_DECAY,
-        )
-        return optimizer
+        return None
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -75,3 +70,25 @@ class VanillaCLIP(nn.Module):
         # retrive image features
         img_features = self.ViT(x)
         return self.head(img_features)
+    
+    def vision_language_forward(self, x: torch.Tensor,) -> torch.Tensor:
+        """
+        Forward pass of Vision Prompt CLIP
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input image tensor
+        text : torch.Tensor
+            Input text tensor
+
+        Returns
+        -------
+        logits : torch.Tensor
+            Output logits tensor
+        """
+
+        image_features = self.ViT(x)
+        text_features = self.model.encode_text(self.prompts)
+        logits_per_image = image_features @ text_features.t()
+        return logits_per_image

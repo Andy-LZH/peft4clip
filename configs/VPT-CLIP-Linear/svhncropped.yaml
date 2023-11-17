@@ -1,15 +1,16 @@
 DATA:
-  NAME: 'vtab-clevr(task="count_all")'
-  NUMBER_CLASSES: 8
+  NAME: "vtab-svhn"
+  DATAPATH: ""
+  NUMBER_CLASSES: 10
   MULTILABEL: False
-  CLASSESPATH: "src/data/datasets/prompts/clevr/count_classes.txt"
+  CLASSESPATH: "src/data/datasets/prompts/svhn/classes.txt"
   DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"
   PROMPT:
     NUM_TOKENS: 200
 SOLVER:
-  BASE_LR: 5.0
+  BASE_LR: 10.0
   WEIGHT_DECAY: 0.0001
   TOTAL_EPOCH: 50
   WARMUP_EPOCH: 5
