@@ -55,10 +55,8 @@ See [prepare_vtab.md](src/data/prompt.md) and [prompt.md](src/data/prompt.md) fo
 | Model |
 | :---: |
 | [CLIP-Adapter](https://github.com/gaopengcuhk/CLIP-Adapter) |
-| [CoOP](https://github.com/KaiyangZhou/CoOp) |
 | [VPT-CLIP-Shallow](https://github.com/KMnP/vpt) |
 | [VPT-CLIP-Deep](https://github.com/KMnP/vpt)|
-| Continued |
 
 ### Running
 ```bash
