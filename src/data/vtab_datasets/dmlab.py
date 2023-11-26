@@ -45,7 +45,7 @@ class DmlabData(base.ImageTfdsData):
     dataset_builder = tfds.builder("dmlab:2.0.1", data_dir=data_dir)
 
     tfds_splits = {
-        "train": "train",
+        "train": "train[:1500]",
         "val": "validation",
         "trainval": "train+validation",
         "test": "test",

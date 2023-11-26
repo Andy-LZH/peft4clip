@@ -2,7 +2,7 @@ DATA:
   NAME: 'vtab-dmlab'
   NUMBER_CLASSES: 6
   MULTILABEL: False
-  CLASSESPATH: "src/data/dmlab/2.0.1/classes.txt"
+  CLASSESPATH: "src/data/datasets/prompts/dmlab/classes.txt"
   DATAPATH: "src/data/"
 MODEL:
   TYPE: "vit"

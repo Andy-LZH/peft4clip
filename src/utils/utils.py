@@ -266,7 +266,7 @@ def _construct_model(args, model, model_config, prompt_config, dataset_config):
         "vtab-sun397": "a photo of a {}",
         "vtab-clevr_count": "there are {} objects in the image",
         "vtab-clevr_distance": "the closest object is {} away from the camera",
-        "vtab-dmlab": "a photo of a {}",
+        "vtab-dmlab": "a photo of {}",
         "vtab-kitti": "a photo with {}",
         "vtab-smallnorb_azimuth": "the camera azimuth is {} degrees",
         "vtab-smallnorb_elevation": "the camera elevation is {} degrees",

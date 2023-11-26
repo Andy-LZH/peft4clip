@@ -1,0 +1,6 @@
+a close object with postive reward
+a close object with negative reward
+a far object with postive reward
+a far object with negative reward
+a very far object with postive reward
+a very far object with negative reward
